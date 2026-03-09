@@ -1,0 +1,29 @@
+{
+	"name": "ping-board",
+	"version": "0.0.1",
+	"author": "Jay",
+	"license": "MIT",
+	"private": true,
+	"scripts": {
+		"dev": "pnpm -r dev",
+		"build": "pnpm -r build",
+		"lint": "pnpm -r lint",
+		"format": "pnpm -r format",
+		"migrate:make": "pnpm --filter backend migrate:make"
+	},
+	"dependencies": {
+		"better-sqlite3": "catalog:",
+		"cors": "catalog:",
+		"express": "catalog:",
+		"helmet": "catalog:",
+		"knex": "catalog:",
+		"zod": "catalog:"
+	},
+	"devDependencies": {
+		"@types/cors": "catalog:",
+		"@types/express": "catalog:",
+		"@types/node": "catalog:",
+		"prettier": "catalog:",
+		"typescript": "catalog:"
+	}
+}

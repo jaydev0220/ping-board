@@ -1,0 +1,32 @@
+{
+	"name": "@apps/backend",
+	"private": true,
+	"version": "0.0.1",
+	"type": "module",
+	"scripts": {
+		"dev": "",
+		"build": "tsc",
+		"lint": "eslint src",
+		"format": "prettier --write .",
+		"migrate:make": "knex migrate:make -x ts"
+	},
+	"dependencies": {
+		"better-sqlite3": "catalog:",
+		"cors": "catalog:",
+		"express": "catalog:",
+		"helmet": "catalog:",
+		"knex": "catalog:",
+		"zod": "catalog:"
+	},
+	"devDependencies": {
+		"@eslint/js": "catalog:",
+		"@types/cors": "catalog:",
+		"@types/express": "catalog:",
+		"@types/node": "catalog:",
+		"eslint": "catalog:",
+		"globals": "catalog:",
+		"prettier": "catalog:",
+		"typescript": "catalog:",
+		"typescript-eslint": "catalog:"
+	}
+}
