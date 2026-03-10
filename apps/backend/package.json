@@ -8,7 +8,9 @@
 		"build": "tsc",
 		"lint": "eslint src",
 		"format": "prettier --write .",
-		"migrate:make": "knex migrate:make -x ts"
+		"migrate:make": "knex migrate:make",
+		"migrate:latest": "knex migrate:latest",
+		"migrate:rollback": "knex migrate:rollback"
 	},
 	"dependencies": {
 		"better-sqlite3": "catalog:",

@@ -9,7 +9,11 @@
 		"build": "pnpm -r build",
 		"lint": "pnpm -r lint",
 		"format": "pnpm -r format",
-		"migrate:make": "pnpm --filter backend migrate:make"
+		"migrate:make": "pnpm --filter backend migrate:make",
+		"migrate:latest:dev": "pnpm --filter backend migrate:latest --env development",
+		"migrate:latest:prod": "pnpm --filter backend migrate:latest --env production",
+		"migrate:rollback:dev": "pnpm --filter backend migrate:rollback --env development",
+		"migrate:rollback:prod": "pnpm --filter backend migrate:rollback --env production"
 	},
 	"dependencies": {
 		"better-sqlite3": "catalog:",
