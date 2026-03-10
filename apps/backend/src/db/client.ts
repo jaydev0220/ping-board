@@ -1,8 +1,6 @@
 import { mkdirSync } from 'node:fs';
 import path from 'node:path';
-
 import Database from 'better-sqlite3';
-
 import { env } from '../config/env.js';
 
 const ensureSqliteDirectory = (filename: string): void => {
@@ -22,7 +20,6 @@ const createDatabase = () => {
 	database.pragma('foreign_keys = ON');
 	database.pragma('busy_timeout = 5000');
 	database.pragma('synchronous = NORMAL');
-
 	return database;
 };
 

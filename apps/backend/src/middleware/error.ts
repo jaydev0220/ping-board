@@ -8,14 +8,15 @@ type ErrorWithStatus = Error & {
 const isHttpStatusCode = (value: number) => value >= 400 && value <= 599;
 
 const getStatusCode = (error: ErrorWithStatus) => {
-	if (typeof error.statusCode === 'number' && isHttpStatusCode(error.statusCode)) {
+	if (
+		typeof error.statusCode === 'number' &&
+		isHttpStatusCode(error.statusCode)
+	) {
 		return error.statusCode;
 	}
-
 	if (typeof error.status === 'number' && isHttpStatusCode(error.status)) {
 		return error.status;
 	}
-
 	return 500;
 };
 
@@ -28,7 +29,10 @@ export const errorHandler = (
 	void _next;
 
 	const statusCode = getStatusCode(error);
-	const message = statusCode >= 500 ? 'Internal server error' : error.message || 'Request failed';
+	const message =
+		statusCode >= 500
+			? 'Internal server error'
+			: error.message || 'Request failed';
 
 	res.status(statusCode).json({
 		error: message

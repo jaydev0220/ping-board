@@ -1,8 +1,6 @@
 import { mkdirSync } from 'node:fs';
 import path from 'node:path';
-
 import knex, { type Knex } from 'knex';
-
 import { env } from '../config/env.js';
 
 const ensureSqliteDirectory = (filename: string): void => {

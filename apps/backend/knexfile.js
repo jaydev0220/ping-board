@@ -3,7 +3,9 @@ import { fileURLToPath } from 'node:url';
 
 const backendDirectory = path.dirname(fileURLToPath(import.meta.url));
 const migrationsDirectory = path.join(backendDirectory, 'migrations');
-const defaultSqliteFilename = path.resolve(process.env.SQLITE_PATH ?? './data/ping-board.sqlite3');
+const defaultSqliteFilename = path.resolve(
+	process.env.SQLITE_PATH ?? './data/ping-board.sqlite3'
+);
 
 /**
  * @param {string} filename
