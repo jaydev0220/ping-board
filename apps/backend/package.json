@@ -20,6 +20,7 @@
 		"express": "catalog:",
 		"helmet": "catalog:",
 		"knex": "catalog:",
+		"node-cron": "catalog:",
 		"zod": "catalog:"
 	},
 	"devDependencies": {

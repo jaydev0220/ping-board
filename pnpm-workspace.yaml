@@ -22,6 +22,7 @@ catalog:
   globals: ^17.4.0
   helmet: ^8.1.0
   knex: ^3.1.0
+  node-cron: ^4.2.1
   prettier: ^3.8.1
   prettier-plugin-svelte: ^3.4.1
   prettier-plugin-tailwindcss: ^0.7.2
