@@ -7,6 +7,7 @@ const rawEnvSchema = z.object({
 		.default('development'),
 	HOST: z.string().trim().min(1).default('127.0.0.1'),
 	PORT: z.coerce.number().int().min(1).max(65535).default(3001),
+	PING_TIMEOUT_MS: z.coerce.number().int().positive().default(5000),
 	SQLITE_PATH: z.string().trim().min(1).default('./data/ping-board.sqlite3'),
 	CORS_ALLOWED_ORIGINS: z.string().trim().default('http://localhost:5173')
 });
@@ -42,6 +43,7 @@ const envSchema = rawEnvSchema.transform((input, ctx) => {
 		nodeEnv: input.NODE_ENV,
 		host: input.HOST,
 		port: input.PORT,
+		pingTimeoutMs: input.PING_TIMEOUT_MS,
 		sqlitePath,
 		corsAllowedOrigins
 	};
