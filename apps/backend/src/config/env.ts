@@ -9,7 +9,10 @@ const rawEnvSchema = z.object({
 	PORT: z.coerce.number().int().min(1).max(65535).default(3001),
 	PING_TIMEOUT_MS: z.coerce.number().int().positive().default(5000),
 	SQLITE_PATH: z.string().trim().min(1).default('./data/ping-board.sqlite3'),
-	CORS_ALLOWED_ORIGINS: z.string().trim().default('http://localhost:5173')
+	CORS_ALLOWED_ORIGINS: z.string().trim().default('http://localhost:5173'),
+	JWT_SECRET: z.string().min(32),
+	ACCESS_TOKEN_TTL: z.string().default('15m'),
+	REFRESH_TOKEN_TTL: z.string().default('7d')
 });
 const envSchema = rawEnvSchema.transform((input, ctx) => {
 	const corsAllowedOrigins = input.CORS_ALLOWED_ORIGINS.split(',')
@@ -45,7 +48,10 @@ const envSchema = rawEnvSchema.transform((input, ctx) => {
 		port: input.PORT,
 		pingTimeoutMs: input.PING_TIMEOUT_MS,
 		sqlitePath,
-		corsAllowedOrigins
+		corsAllowedOrigins,
+		jwtSecret: input.JWT_SECRET,
+		accessTokenTtl: input.ACCESS_TOKEN_TTL,
+		refreshTokenTtl: input.REFRESH_TOKEN_TTL
 	};
 });
 const parsedEnv = envSchema.safeParse(process.env);
