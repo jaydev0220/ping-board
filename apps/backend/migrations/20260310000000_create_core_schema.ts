@@ -9,7 +9,6 @@ export async function up(knex: Knex): Promise<void> {
 			created_at INTEGER NOT NULL DEFAULT (unixepoch())
 		)
 	`);
-
 	await knex.schema.raw(`
 		CREATE TABLE services (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -21,7 +20,6 @@ export async function up(knex: Knex): Promise<void> {
 			created_by INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE
 		)
 	`);
-
 	await knex.schema.raw(`
 		CREATE TABLE ping_logs (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -32,12 +30,10 @@ export async function up(knex: Knex): Promise<void> {
 			checked_at INTEGER NOT NULL DEFAULT (unixepoch())
 		)
 	`);
-
 	await knex.schema.raw(`
 		CREATE INDEX idx_ping_logs_service_checked
 		ON ping_logs(service_id, checked_at DESC)
 	`);
-
 	await knex.schema.raw(`
 		CREATE INDEX idx_ping_logs_checked_at
 		ON ping_logs(checked_at DESC)
