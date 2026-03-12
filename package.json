@@ -24,6 +24,7 @@
 		"zod": "catalog:"
 	},
 	"devDependencies": {
+		"@eslint/compat": "catalog:",
 		"@types/cors": "catalog:",
 		"@types/express": "catalog:",
 		"@types/node": "catalog:",

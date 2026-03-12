@@ -1,7 +1,11 @@
 import js from '@eslint/js';
+import { includeIgnoreFile } from '@eslint/compat';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 import { defineConfig } from 'eslint/config';
+import path from 'path';
+
+const gitignorePath = path.resolve(import.meta.dirname, '../..', '.gitignore');
 
 export default defineConfig([
 	{
@@ -11,6 +15,7 @@ export default defineConfig([
 		languageOptions: { globals: globals.node }
 	},
 	tseslint.configs.recommended,
+	includeIgnoreFile(gitignorePath),
 	{
 		rules: {
 			'padding-line-between-statements': [

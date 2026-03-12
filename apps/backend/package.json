@@ -8,7 +8,7 @@
 		"build": "tsc -p tsconfig.json",
 		"start": "node build/server.js",
 		"typecheck": "tsc --noEmit -p tsconfig.json",
-		"lint": "eslint src",
+		"lint": "eslint .",
 		"format": "prettier --write .",
 		"migrate:make": "knex migrate:make",
 		"migrate:latest": "knex migrate:latest",
@@ -16,7 +16,10 @@
 		"test-pinger": "node --experimental-transform-types scripts/test-pinger.ts"
 	},
 	"dependencies": {
+		"argon2": "catalog:",
 		"better-sqlite3": "catalog:",
+		"cookie-parser": "catalog:",
+		"jose": "catalog:",
 		"cors": "catalog:",
 		"express": "catalog:",
 		"helmet": "catalog:",
@@ -25,8 +28,10 @@
 		"zod": "catalog:"
 	},
 	"devDependencies": {
+		"@eslint/compat": "catalog:",
 		"@eslint/js": "catalog:",
 		"@types/better-sqlite3": "catalog:",
+		"@types/cookie-parser": "catalog:",
 		"@types/cors": "catalog:",
 		"@types/express": "catalog:",
 		"@types/node": "catalog:",
