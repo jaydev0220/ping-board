@@ -1,8 +1,10 @@
+import cookieParser from 'cookie-parser';
 import cors, { type CorsOptions } from 'cors';
 import express from 'express';
 import helmet from 'helmet';
 import { env } from './config/env.js';
 import { errorHandler } from './middleware/error.js';
+import { authRouter } from './routes/auth.js';
 
 const createCorsOptions = (): CorsOptions => {
 	const allowedOrigins = new Set(env.corsAllowedOrigins);
@@ -24,6 +26,8 @@ export const createApp = () => {
 	app.use(helmet());
 	app.use(cors(createCorsOptions()));
 	app.use(express.json());
+	app.use(cookieParser());
+	app.use('/auth', authRouter);
 	app.get('/health', (_req, res) => {
 		res.status(200).json({ status: 'ok' });
 	});
