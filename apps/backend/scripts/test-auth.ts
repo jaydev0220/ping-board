@@ -38,17 +38,15 @@ const displayResponse = (
 	data: unknown,
 	setCookieHeader?: string | null
 ): void => {
-	console.log(`Status: ${status}`);
-	console.log('Response:');
+	console.log(`HTTP 狀態碼: ${status}`);
+	console.log('回覆資料:');
 	console.log(formatJsonResponse(data));
 
 	if (setCookieHeader) {
 		const token = extractRefreshToken(setCookieHeader);
 
 		lastExtractedToken = token;
-		console.log(
-			`\nSet-Cookie extracted: refreshToken=${token.substring(0, 20)}...`
-		);
+		console.log(`\n設置 Cookie: refreshToken=${token.substring(0, 20)}...`);
 	}
 };
 
@@ -64,10 +62,7 @@ const checkServerConnection = async (): Promise<boolean> => {
 		}
 		return true;
 	} catch {
-		console.error(`❌ Server connection error: Cannot connect to ${BASE_URL}`);
-		console.error(
-			`   Make sure the server is running on http://127.0.0.1:3001`
-		);
+		console.error(`❌ 無法連線至 ${BASE_URL}`);
 		return false;
 	}
 };
@@ -75,8 +70,8 @@ const checkServerConnection = async (): Promise<boolean> => {
 const testRegister = async (): Promise<void> => {
 	console.log('\n--- POST /auth/register ---');
 
-	const username = await prompt('Enter username: ');
-	const password = await prompt('Enter password: ');
+	const username = await prompt('使用者名稱: ');
+	const password = await prompt('密碼: ');
 
 	try {
 		const response = await fetch(`${BASE_URL}/auth/register`, {
@@ -91,15 +86,15 @@ const testRegister = async (): Promise<void> => {
 		console.log(`[${getTimestamp()}] POST /auth/register`);
 		displayResponse(response.status, data, setCookieHeader);
 	} catch (error) {
-		console.error(`\n❌ Request failed: ${String(error)}`);
+		console.error(`\n❌ 請求失敗: ${String(error)}`);
 	}
 };
 
 const testLogin = async (): Promise<void> => {
 	console.log('\n--- POST /auth/login ---');
 
-	const username = await prompt('Enter username: ');
-	const password = await prompt('Enter password: ');
+	const username = await prompt('使用者名稱: ');
+	const password = await prompt('密碼: ');
 
 	try {
 		const response = await fetch(`${BASE_URL}/auth/login`, {
@@ -114,30 +109,19 @@ const testLogin = async (): Promise<void> => {
 		console.log(`[${getTimestamp()}] POST /auth/login`);
 		displayResponse(response.status, data, setCookieHeader);
 	} catch (error) {
-		console.error(`\n❌ Request failed: ${String(error)}`);
+		console.error(`\n❌ 請求失敗: ${String(error)}`);
 	}
 };
 
 const testRefresh = async (): Promise<void> => {
 	console.log('\n--- POST /auth/refresh ---');
 
-	if (lastExtractedToken) {
-		console.log(
-			`Last extracted token: ${lastExtractedToken.substring(0, 20)}...`
-		);
-	}
-
-	const tokenInput = await prompt(
-		"Enter refresh token (or 'auto' to use last extracted): "
-	);
-	const token = tokenInput === 'auto' ? lastExtractedToken : tokenInput;
-
-	if (!token) {
-		console.error(
-			'❌ No refresh token provided and no token extracted from previous requests.'
-		);
+	if (!lastExtractedToken) {
+		console.log('尚未登入');
 		return;
 	}
+
+	const token = lastExtractedToken;
 
 	try {
 		const response = await fetch(`${BASE_URL}/auth/refresh`, {
@@ -154,21 +138,19 @@ const testRefresh = async (): Promise<void> => {
 		console.log(`[${getTimestamp()}] POST /auth/refresh`);
 		displayResponse(response.status, data, setCookieHeader);
 	} catch (error) {
-		console.error(`\n❌ Request failed: ${String(error)}`);
+		console.error(`\n❌ 請求失敗: ${String(error)}`);
 	}
 };
 
 const showMenu = (): void => {
-	console.log('\n=== Auth Endpoint Tester ===');
-	console.log('1. POST /auth/register');
-	console.log('2. POST /auth/login');
-	console.log('3. POST /auth/refresh');
-	console.log('4. Exit');
+	console.log('\n=== 身分驗證端點測試 ===');
+	console.log('1. POST /auth/register (註冊)');
+	console.log('2. POST /auth/login (登入)');
+	console.log('3. POST /auth/refresh (刷新通行證)');
+	console.log('4. 離開');
 };
 
 const main = async (): Promise<void> => {
-	console.log('Checking server connection...');
-
 	const isConnected = await checkServerConnection();
 
 	if (!isConnected) {
@@ -176,14 +158,12 @@ const main = async (): Promise<void> => {
 		process.exit(1);
 	}
 
-	console.log('✅ Server connection OK\n');
-
 	let running = true;
 
 	while (running) {
 		showMenu();
 
-		const option = await prompt('\nSelect option (1-4): ');
+		const option = await prompt('\n選擇操作 (1-4): ');
 
 		switch (option.trim()) {
 			case '1':
@@ -197,10 +177,9 @@ const main = async (): Promise<void> => {
 				break;
 			case '4':
 				running = false;
-				console.log('\nGoodbye!');
 				break;
 			default:
-				console.log('❌ Invalid option. Please select 1-4.');
+				break;
 		}
 	}
 
