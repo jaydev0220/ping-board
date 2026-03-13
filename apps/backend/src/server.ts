@@ -1,11 +1,13 @@
-import { createApp } from './app.js';
 import { env } from './config/env.js';
 import { runMigrations } from './db/migrate.js';
-import { startPingerJobs } from './jobs/pinger.js';
 
 const startServer = async () => {
 	await runMigrations();
 
+	const [{ createApp }, { startPingerJobs }] = await Promise.all([
+		import('./app.js'),
+		import('./jobs/pinger.js')
+	]);
 	const app = createApp();
 
 	startPingerJobs({ timeoutMs: env.pingTimeoutMs });
