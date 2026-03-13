@@ -83,7 +83,7 @@ function storeRefreshToken(userId: number, rawToken: string): void {
 
 export async function registerUser(
 	input: RegisterInput
-): Promise<{ user: AuthUser; accessToken: string; refreshToken: string }> {
+): Promise<void> {
 	const existing = db
 		.prepare<[string], { id: number }>(
 			'SELECT id FROM users WHERE username = ?'
@@ -94,15 +94,12 @@ export async function registerUser(
 		throw new AppError(400, 'Username already taken');
 	}
 
-	const pwdHash = await argon2.hash(input.password);	const result = db
-		.prepare('INSERT INTO users (username, pwd_hash) VALUES (?, ?)')
-		.run(input.username, pwdHash);	const userId = result.lastInsertRowid as number;
-	const user: AuthUser = { id: userId, username: input.username };	const [accessToken, refreshToken] = await Promise.all([
-		createAccessToken(userId, input.username),
-		createRefreshToken(userId)
-	]);
+	const pwdHash = await argon2.hash(input.password);
 
-	storeRefreshToken(userId, refreshToken);	return { user, accessToken, refreshToken };
+	db.prepare('INSERT INTO users (username, pwd_hash) VALUES (?, ?)').run(
+		input.username,
+		pwdHash
+	);
 }
 
 export async function loginUser(

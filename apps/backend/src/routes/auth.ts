@@ -8,7 +8,8 @@ import {
 	registerUser
 } from '../services/auth.js';
 
-const REFRESH_COOKIE_NAME = 'refreshToken';const COOKIE_OPTIONS: CookieOptions = {
+const REFRESH_COOKIE_NAME = 'refreshToken';
+const COOKIE_OPTIONS: CookieOptions = {
 	httpOnly: true,
 	secure: env.nodeEnv === 'production',
 	sameSite: 'strict',
@@ -30,11 +31,10 @@ authRouter.post('/register', async (req, res) => {
 		return;
 	}
 
-	const { user, accessToken, refreshToken } = await registerUser(parsed.data);
-
-	res.cookie(REFRESH_COOKIE_NAME, refreshToken, COOKIE_OPTIONS);
-	res.status(201).json({ user: { id: user.id, username: user.username }, accessToken });
-});// POST /auth/login
+	await registerUser(parsed.data);
+	res.status(201).json({ message: 'User registered successfully' });
+});
+// POST /auth/login
 authRouter.post('/login', async (req, res) => {
 	const parsed = LoginSchema.safeParse(req.body);
 
@@ -50,7 +50,8 @@ authRouter.post('/login', async (req, res) => {
 
 	res.cookie(REFRESH_COOKIE_NAME, refreshToken, COOKIE_OPTIONS);
 	res.status(200).json({ user: { id: user.id, username: user.username }, accessToken });
-});// POST /auth/refresh
+});
+// POST /auth/refresh
 authRouter.post('/refresh', async (req, res) => {
 	const raw = req.cookies?.refreshToken as string | undefined;
 
