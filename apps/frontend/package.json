@@ -34,5 +34,8 @@
 		"typescript": "catalog:",
 		"typescript-eslint": "catalog:",
 		"vite": "catalog:"
+	},
+	"dependencies": {
+		"@lucide/svelte": "catalog:"
 	}
 }

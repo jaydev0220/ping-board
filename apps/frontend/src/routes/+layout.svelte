@@ -26,6 +26,12 @@
 		sizes="any"
 	/>
 	<link rel="canonical" href="https://www.hsieh-dev.us.ci{page.url.pathname}" />
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+	<link
+		href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC&family=Space+Grotesk:wght@700&display=swap"
+		rel="stylesheet"
+	/>
 </svelte:head>
 
 {@render children()}

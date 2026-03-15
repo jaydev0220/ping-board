@@ -12,6 +12,9 @@ catalogs:
     '@eslint/js':
       specifier: ^9.39.4
       version: 9.39.4
+    '@lucide/svelte':
+      specifier: ^0.577.0
+      version: 0.577.0
     '@sveltejs/adapter-vercel':
       specifier: ^6.3.1
       version: 6.3.3
@@ -228,6 +231,10 @@ importers:
         version: 8.56.1(eslint@9.39.4(jiti@2.6.1))(typescript@5.9.3)
 
   apps/frontend:
+    dependencies:
+      '@lucide/svelte':
+        specifier: 'catalog:'
+        version: 0.577.0(svelte@5.53.7)
     devDependencies:
       '@eslint/compat':
         specifier: 'catalog:'
@@ -690,6 +697,11 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
+
+  '@lucide/svelte@0.577.0':
+    resolution: {integrity: sha512-0P6mkySd2MapIEgq08tADPmcN4DHndC/02PWwaLkOerXlx5Sv9aT4BxyXLIY+eccr0g/nEyCYiJesqS61YdBZQ==}
+    peerDependencies:
+      svelte: ^5
 
   '@mapbox/node-pre-gyp@2.0.3':
     resolution: {integrity: sha512-uwPAhccfFJlsfCxMYTwOdVfOz3xqyj8xYL3zJj8f0pb30tLohnnFPhLuqp4/qoEz8sNxe4SESZedcBojRefIzg==}
@@ -2695,6 +2707,10 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
+
+  '@lucide/svelte@0.577.0(svelte@5.53.7)':
+    dependencies:
+      svelte: 5.53.7
 
   '@mapbox/node-pre-gyp@2.0.3':
     dependencies:
