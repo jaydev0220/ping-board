@@ -34,7 +34,8 @@ const normalizeStatusFieldErrors = (
 ): Record<string, string[] | undefined> => ({
 	...fieldErrors,
 	id: fieldErrors['id']?.map(() => '服務 ID 必須為正整數')
-});const getStatusHistoryCutoffUnixSeconds = (): number =>
+});
+const getStatusHistoryCutoffUnixSeconds = (): number =>
 	Math.floor(Date.now() / 1000) - STATUS_HISTORY_WINDOW_DAYS * SECONDS_PER_DAY;
 
 statusRouter.get('/:id', async (req, res) => {

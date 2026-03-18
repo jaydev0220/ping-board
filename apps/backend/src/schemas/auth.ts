@@ -13,10 +13,7 @@ export const RegisterSchema = z.object({
 		.string()
 		.min(3, '使用者名稱至少需為 3 個字元')
 		.max(20, '使用者名稱最多為 20 個字元')
-		.regex(
-			/^[a-zA-Z0-9_]+$/,
-			'使用者名稱僅能包含英文字母、數字與底線'
-		),
+		.regex(/^[a-zA-Z0-9_]+$/, '使用者名稱僅能包含英文字母、數字與底線'),
 	password: PasswordSchema
 });
 

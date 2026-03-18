@@ -55,7 +55,10 @@ const checkServerConnection = async (): Promise<void> => {
 	assert(response.ok, `Health check failed with status ${response.status}`);
 };
 
-const registerUser = async (username: string, password: string): Promise<void> => {
+const registerUser = async (
+	username: string,
+	password: string
+): Promise<void> => {
 	const response = await fetch(`${BASE_URL}/auth/register`, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
@@ -88,8 +91,12 @@ const loginUser = async (
 	const data = await getJson<LoginSuccessResponse>(response);
 	const setCookie = response.headers.get('set-cookie');
 
-	assert(typeof data.accessToken === 'string' && data.accessToken.length > 0, '登入回應缺少 accessToken');
-	assert(setCookie !== null && setCookie.length > 0, '登入回應缺少 Set-Cookie');	return { accessToken: data.accessToken, setCookie };
+	assert(
+		typeof data.accessToken === 'string' && data.accessToken.length > 0,
+		'登入回應缺少 accessToken'
+	);
+	assert(setCookie !== null && setCookie.length > 0, '登入回應缺少 Set-Cookie');
+	return { accessToken: data.accessToken, setCookie };
 };
 
 const createService = async (
@@ -112,7 +119,8 @@ const createService = async (
 
 const run = async (): Promise<void> => {
 	console.log('🧪 Testing POST /services quota limit');
-	console.log('====================================\n');	console.log('1. Check backend server connection...');
+	console.log('====================================\n');
+	console.log('1. Check backend server connection...');
 	await checkServerConnection();
 	console.log('   ✅ Backend is reachable');
 
@@ -123,21 +131,34 @@ const run = async (): Promise<void> => {
 
 	const { accessToken } = await loginUser(username, password);
 
-	console.log(`   ✅ Registered and logged in: ${username}`);	console.log('\n3. Create first service (should succeed)...');
+	console.log(`   ✅ Registered and logged in: ${username}`);
+	console.log('\n3. Create first service (should succeed)...');
 
 	const firstResponse = await createService(accessToken, 1);
-	const firstData = await getJson<ServiceResponse | ErrorResponse>(firstResponse);
+	const firstData = await getJson<ServiceResponse | ErrorResponse>(
+		firstResponse
+	);
 
-	assert(firstResponse.status === 201, `第一個服務建立失敗，狀態碼: ${firstResponse.status}`);
+	assert(
+		firstResponse.status === 201,
+		`第一個服務建立失敗，狀態碼: ${firstResponse.status}`
+	);
 	assert('service' in firstData, '第一個服務建立回應格式不正確');
-	console.log('   ✅ First service created');	console.log('\n4. Create second service (should succeed)...');
+	console.log('   ✅ First service created');
+	console.log('\n4. Create second service (should succeed)...');
 
 	const secondResponse = await createService(accessToken, 2);
-	const secondData = await getJson<ServiceResponse | ErrorResponse>(secondResponse);
+	const secondData = await getJson<ServiceResponse | ErrorResponse>(
+		secondResponse
+	);
 
-	assert(secondResponse.status === 201, `第二個服務建立失敗，狀態碼: ${secondResponse.status}`);
+	assert(
+		secondResponse.status === 201,
+		`第二個服務建立失敗，狀態碼: ${secondResponse.status}`
+	);
 	assert('service' in secondData, '第二個服務建立回應格式不正確');
-	console.log('   ✅ Second service created');	console.log('\n5. Create third service (should fail with quota error)...');
+	console.log('   ✅ Second service created');
+	console.log('\n5. Create third service (should fail with quota error)...');
 
 	const thirdResponse = await createService(accessToken, 3);
 	const thirdData = await getJson<ErrorResponse>(thirdResponse);
@@ -150,7 +171,10 @@ const run = async (): Promise<void> => {
 		thirdData.error === EXPECTED_QUOTA_ERROR,
 		`第三個服務錯誤訊息不符。預期: "${EXPECTED_QUOTA_ERROR}"，實際: "${thirdData.error}"`
 	);
-	console.log(`   ✅ Third service rejected with expected error: ${thirdData.error}`);	console.log('\n====================================');
+	console.log(
+		`   ✅ Third service rejected with expected error: ${thirdData.error}`
+	);
+	console.log('\n====================================');
 	console.log('✅ Services quota test passed!');
 	console.log('====================================');
 };

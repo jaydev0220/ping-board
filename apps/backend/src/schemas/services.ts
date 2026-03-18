@@ -13,8 +13,8 @@ const ServiceDescriptionInputSchema = z
 const BinaryIntSchema = z.union([z.literal(0), z.literal(1)]);
 
 export const ServiceIdParamsSchema = z.object({
-	id: z
-		.coerce.number('服務 ID 必須為數字')
+	id: z.coerce
+		.number('服務 ID 必須為數字')
 		.int('服務 ID 必須為整數')
 		.positive('服務 ID 必須為正整數')
 });

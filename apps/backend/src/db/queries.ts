@@ -41,7 +41,10 @@ const getUserServicesStatement = db.prepare<[userId: number], ServiceRow>(
 			ORDER BY id ASC
 		`
 );
-const getUserServiceCountStatement = db.prepare<[userId: number], { count: number }>(
+const getUserServiceCountStatement = db.prepare<
+	[userId: number],
+	{ count: number }
+>(
 	`
 		SELECT COUNT(*) AS count
 		FROM services
@@ -133,7 +136,8 @@ export const getUserServiceQuota = (userId: number): number => {
 		serviceQuota < 0
 	) {
 		return 2;
-	}	return serviceQuota;
+	}
+	return serviceQuota;
 };
 
 export const getServiceById = (
