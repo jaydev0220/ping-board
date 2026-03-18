@@ -34,21 +34,22 @@ const selectServiceColumns = `
 	SELECT id, name, url, description, is_active, created_at, created_by
 	FROM services
 `;
-const getUserServicesStatement = db
-	.prepare<[userId: number], ServiceRow>(
-		`
+const getUserServicesStatement = db.prepare<[userId: number], ServiceRow>(
+	`
 			${selectServiceColumns}
 			WHERE created_by = ?
 			ORDER BY id ASC
 		`
-	);
-const getServiceByIdStatement = db
-	.prepare<[serviceId: number, userId: number], ServiceRow>(
-		`
+);
+const getServiceByIdStatement = db.prepare<
+	[serviceId: number, userId: number],
+	ServiceRow
+>(
+	`
 			${selectServiceColumns}
 			WHERE id = ? AND created_by = ?
 		`
-	);
+);
 const createServiceStatement = db.prepare<
 	[name: string, url: string, description: string | null, userId: number]
 >(
@@ -90,9 +91,8 @@ const getServiceStatusHistoryStatement = db.prepare<
 		ORDER BY checked_at DESC
 	`
 );
-const normalizeDescription = (
-	description: string | undefined
-): string | null => description ?? null;
+const normalizeDescription = (description: string | undefined): string | null =>
+	description ?? null;
 
 const rowIdToNumber = (rowId: number | bigint): number => {
 	if (typeof rowId === 'bigint') {

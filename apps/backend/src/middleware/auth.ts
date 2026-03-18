@@ -12,7 +12,12 @@ const getBearerToken = (authorizationHeader: string | undefined): string => {
 
 	const [scheme, token, ...rest] = authorizationHeader.split(' ');
 
-	if (scheme !== 'Bearer' || token === undefined || token.length === 0 || rest.length > 0) {
+	if (
+		scheme !== 'Bearer' ||
+		token === undefined ||
+		token.length === 0 ||
+		rest.length > 0
+	) {
 		throw new AppError(401, 'Invalid authorization header');
 	}
 	return token;

@@ -18,9 +18,14 @@ import {
 export const servicesRouter = Router();
 
 const getAuthenticatedUserId = (userId: number | undefined): number => {
-	if (typeof userId !== 'number' || !Number.isSafeInteger(userId) || userId <= 0) {
+	if (
+		typeof userId !== 'number' ||
+		!Number.isSafeInteger(userId) ||
+		userId <= 0
+	) {
 		throw new AppError(401, 'Invalid authorization token');
-	}	return userId;
+	}
+	return userId;
 };
 
 const sendValidationError = (
@@ -38,7 +43,8 @@ servicesRouter.get('/', async (req, res) => {
 	const services = getUserServices(userId);
 
 	res.status(200).json({ services });
-});servicesRouter.post('/', async (req, res) => {
+});
+servicesRouter.post('/', async (req, res) => {
 	const userId = getAuthenticatedUserId(req.user?.id);
 	const parsedBody = CreateServiceSchema.safeParse(req.body);
 
@@ -54,10 +60,12 @@ servicesRouter.get('/', async (req, res) => {
 					name: parsedBody.data.name,
 					url: parsedBody.data.url,
 					description: parsedBody.data.description
-				};	const service = createService(userId, createPayload);
+				};
+	const service = createService(userId, createPayload);
 
 	res.status(201).json({ service });
-});servicesRouter.patch('/:id', async (req, res) => {
+});
+servicesRouter.patch('/:id', async (req, res) => {
 	const userId = getAuthenticatedUserId(req.user?.id);
 	const parsedParams = ServiceIdParamsSchema.safeParse(req.params);
 
@@ -95,7 +103,8 @@ servicesRouter.get('/', async (req, res) => {
 	}
 
 	res.status(200).json({ service: updatedService });
-});servicesRouter.delete('/:id', async (req, res) => {
+});
+servicesRouter.delete('/:id', async (req, res) => {
 	const userId = getAuthenticatedUserId(req.user?.id);
 	const parsedParams = ServiceIdParamsSchema.safeParse(req.params);
 

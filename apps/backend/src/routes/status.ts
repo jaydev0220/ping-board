@@ -1,9 +1,6 @@
 import { Router, type Response } from 'express';
 import { AppError } from '../middleware/error.js';
-import {
-	getServiceById,
-	getServiceStatusHistory
-} from '../db/queries.js';
+import { getServiceById, getServiceStatusHistory } from '../db/queries.js';
 import { ServiceIdParamsSchema } from '../schemas/services.js';
 
 const STATUS_HISTORY_WINDOW_DAYS = 90;
@@ -12,7 +9,11 @@ const SECONDS_PER_DAY = 24 * 60 * 60;
 export const statusRouter = Router();
 
 const getAuthenticatedUserId = (userId: number | undefined): number => {
-	if (typeof userId !== 'number' || !Number.isSafeInteger(userId) || userId <= 0) {
+	if (
+		typeof userId !== 'number' ||
+		!Number.isSafeInteger(userId) ||
+		userId <= 0
+	) {
 		throw new AppError(401, 'Invalid authorization token');
 	}
 	return userId;

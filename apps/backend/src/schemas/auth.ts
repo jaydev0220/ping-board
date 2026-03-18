@@ -1,11 +1,11 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 export const PasswordSchema = z
 	.string()
 	.min(12)
 	.regex(
 		/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).*$/,
-		"Password must include uppercase, lowercase, a number, and a symbol",
+		'Password must include uppercase, lowercase, a number, and a symbol'
 	);
 
 export const RegisterSchema = z.object({
@@ -15,14 +15,14 @@ export const RegisterSchema = z.object({
 		.max(20)
 		.regex(
 			/^[a-zA-Z0-9_]+$/,
-			"Username may only contain letters, numbers, and underscores",
+			'Username may only contain letters, numbers, and underscores'
 		),
-	password: PasswordSchema,
+	password: PasswordSchema
 });
 
 export const LoginSchema = z.object({
 	username: z.string().min(1),
-	password: z.string().min(1),
+	password: z.string().min(1)
 });
 
 export type RegisterInput = z.infer<typeof RegisterSchema>;

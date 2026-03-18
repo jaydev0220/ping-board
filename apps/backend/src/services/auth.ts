@@ -74,20 +74,20 @@ function storeRefreshToken(userId: number, rawToken: string): void {
 	// Prune expired tokens for this user before inserting
 	db.prepare(
 		'DELETE FROM refresh_tokens WHERE user_id = ? AND expires_at <= ?'
-	).run(userId, nowSecs);	db.prepare(
+	).run(userId, nowSecs);
+	db.prepare(
 		'INSERT INTO refresh_tokens (user_id, token_hash, expires_at) VALUES (?, ?, ?)'
 	).run(userId, tokenHash, expiresAt);
 }
 
 // ─── Public Functions ────────────────────────────────────────────────────────
 
-export async function registerUser(
-	input: RegisterInput
-): Promise<void> {
+export async function registerUser(input: RegisterInput): Promise<void> {
 	const existing = db
-		.prepare<[string], { id: number }>(
-			'SELECT id FROM users WHERE username = ?'
-		)
+		.prepare<
+			[string],
+			{ id: number }
+		>('SELECT id FROM users WHERE username = ?')
 		.get(input.username);
 
 	if (existing !== undefined) {
@@ -106,9 +106,10 @@ export async function loginUser(
 	input: LoginInput
 ): Promise<{ user: AuthUser; accessToken: string; refreshToken: string }> {
 	const row = db
-		.prepare<[string], UserRow>(
-			'SELECT id, username, pwd_hash FROM users WHERE username = ?'
-		)
+		.prepare<
+			[string],
+			UserRow
+		>('SELECT id, username, pwd_hash FROM users WHERE username = ?')
 		.get(input.username);
 
 	if (row === undefined) {
@@ -121,12 +122,14 @@ export async function loginUser(
 		throw new AppError(401, 'Invalid credentials');
 	}
 
-	const user: AuthUser = { id: row.id, username: row.username };	const [accessToken, refreshToken] = await Promise.all([
+	const user: AuthUser = { id: row.id, username: row.username };
+	const [accessToken, refreshToken] = await Promise.all([
 		createAccessToken(row.id, row.username),
 		createRefreshToken(row.id)
 	]);
 
-	storeRefreshToken(row.id, refreshToken);	return { user, accessToken, refreshToken };
+	storeRefreshToken(row.id, refreshToken);
+	return { user, accessToken, refreshToken };
 }
 
 export async function refreshAccessToken(
@@ -158,10 +161,12 @@ export async function refreshAccessToken(
 
 	// Look up hashed token in DB, guard against replay of expired tokens
 	const nowSecs = Math.floor(Date.now() / 1000);
-	const tokenHash = hashToken(rawRefreshToken);	const tokenRow = db
-		.prepare<[string, number], { id: number }>(
-			'SELECT id FROM refresh_tokens WHERE token_hash = ? AND expires_at > ?'
-		)
+	const tokenHash = hashToken(rawRefreshToken);
+	const tokenRow = db
+		.prepare<
+			[string, number],
+			{ id: number }
+		>('SELECT id FROM refresh_tokens WHERE token_hash = ? AND expires_at > ?')
 		.get(tokenHash, nowSecs);
 
 	if (tokenRow === undefined) {
@@ -170,9 +175,10 @@ export async function refreshAccessToken(
 
 	// Look up user (guards against cascade-deleted user)
 	const userRow = db
-		.prepare<[number], { id: number; username: string }>(
-			'SELECT id, username FROM users WHERE id = ?'
-		)
+		.prepare<
+			[number],
+			{ id: number; username: string }
+		>('SELECT id, username FROM users WHERE id = ?')
 		.get(userId);
 
 	if (userRow === undefined) {
@@ -180,5 +186,6 @@ export async function refreshAccessToken(
 	}
 
 	const user: AuthUser = { id: userRow.id, username: userRow.username };
-	const accessToken = await createAccessToken(userRow.id, userRow.username);	return { user, accessToken };
+	const accessToken = await createAccessToken(userRow.id, userRow.username);
+	return { user, accessToken };
 }
