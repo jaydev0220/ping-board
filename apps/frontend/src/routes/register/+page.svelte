@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Eye, EyeOff } from '@lucide/svelte';
-	import { onMount } from 'svelte';
+	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { ApiClientError, getAccessToken, register } from '$lib/api';
@@ -12,6 +12,8 @@
 	let isSubmitting = $state(false);
 	let errorMessage = $state<string | null>(null);
 	let successMessage = $state<string | null>(null);
+	const passwordInputType = $derived(showPwd ? 'text' : 'password');
+	const passwordToggleLabel = $derived(showPwd ? '隱藏密碼' : '顯示密碼');
 
 	function switchPwdDisplay() {
 		showPwd = !showPwd;
@@ -61,12 +63,24 @@
 		}
 	}
 
-	onMount(() => {
+	$effect(() => {
+		if (!browser) {
+			return;
+		}
+
 		if (getAccessToken()) {
 			void goto(resolve('/'));
 		}
 	});
 </script>
+
+{#snippet visibilityIcon(isVisible: boolean)}
+	{#if isVisible}
+		<Eye size={20} />
+	{:else}
+		<EyeOff size={20} />
+	{/if}
+{/snippet}
 
 <div class="flex h-dvh w-dvw flex-col items-center justify-center">
 	<h1 class="mb-6 font-header text-4xl font-bold">Register</h1>
@@ -85,7 +99,7 @@
 		<label class="relative flex flex-col gap-1 text-lg font-bold">
 			密碼
 			<input
-				type={showPwd ? 'text' : 'password'}
+				type={passwordInputType}
 				name="password"
 				autocomplete="new-password"
 				bind:value={password}
@@ -96,19 +110,15 @@
 				type="button"
 				class="absolute top-10.5 right-3 cursor-pointer"
 				onclick={switchPwdDisplay}
-				aria-label={showPwd ? '隱藏密碼' : '顯示密碼'}
+				aria-label={passwordToggleLabel}
 			>
-				{#if showPwd}
-					<Eye size={20} />
-				{:else}
-					<EyeOff size={20} />
-				{/if}
+				{@render visibilityIcon(showPwd)}
 			</button>
 		</label>
 		<label class="relative flex flex-col gap-1 text-lg font-bold">
 			確認密碼
 			<input
-				type={showPwd ? 'text' : 'password'}
+				type={passwordInputType}
 				name="confirm-password"
 				autocomplete="new-password"
 				bind:value={confirmPassword}
@@ -119,13 +129,9 @@
 				type="button"
 				class="absolute top-10.5 right-3 cursor-pointer"
 				onclick={switchPwdDisplay}
-				aria-label={showPwd ? '隱藏密碼' : '顯示密碼'}
+				aria-label={passwordToggleLabel}
 			>
-				{#if showPwd}
-					<Eye size={20} />
-				{:else}
-					<EyeOff size={20} />
-				{/if}
+				{@render visibilityIcon(showPwd)}
 			</button>
 		</label>
 		{#if errorMessage}

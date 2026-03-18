@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { Plus } from '@lucide/svelte';
-	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
@@ -40,6 +39,7 @@
 	let mutationErrorMessage = $state<string | null>(null);
 	let showCreateModal = $state(false);
 	let services = $state<ServiceCardData[]>([]);
+	const serviceUsageLabel = $derived(`已用空間: ${services.length} / 2`);
 
 	const transformStatusHistoryToUptimeData = (
 		statusHistory: StatusHistoryRow[],
@@ -200,12 +200,27 @@
 		void loadDashboardData();
 	});
 
-	onMount(() => {
+	$effect(() => {
+		if (!browser) {
+			return;
+		}
+
 		if (!getAccessToken()) {
 			void goto(resolve('/login'));
 		}
 	});
 </script>
+
+{#snippet statusPanel(message: string, tone: 'default' | 'destructive' = 'default')}
+	<div
+		class={`w-full max-w-5xl rounded-lg border-2 bg-surface p-8 text-center ${
+			tone === 'destructive' ? 'border-destructive text-destructive' : 'border-border text-muted'
+		}`}
+		role={tone === 'destructive' ? 'alert' : undefined}
+	>
+		{message}
+	</div>
+{/snippet}
 
 <div class="relative flex h-dvh w-dvw flex-col items-center">
 	<header
@@ -223,19 +238,22 @@
 			</div>
 		{/if}
 
+		<div class="flex w-full max-w-5xl items-center justify-end gap-6 px-6 py-2">
+			<div class="text-lg">{serviceUsageLabel}</div>
+			<button
+				class="flex cursor-pointer items-center justify-center gap-1 rounded-lg bg-primary px-2 py-1"
+				onclick={openCreateModal}
+				aria-label="Add service"
+			>
+				<Plus size={18} />
+				新增服務
+			</button>
+		</div>
+
 		{#if isLoading}
-			<div
-				class="w-full max-w-5xl rounded-lg border-2 border-border bg-surface p-8 text-center text-muted"
-			>
-				Loading services...
-			</div>
+			{@render statusPanel('Loading services...')}
 		{:else if errorMessage}
-			<div
-				class="w-full max-w-5xl rounded-lg border-2 border-destructive bg-surface p-8 text-center text-destructive"
-				role="alert"
-			>
-				{errorMessage}
-			</div>
+			{@render statusPanel(errorMessage, 'destructive')}
 		{:else if services.length > 0}
 			{#each services as item (item.id)}
 				<UptimeBar
@@ -247,11 +265,7 @@
 				/>
 			{/each}
 		{:else}
-			<div
-				class="w-full max-w-5xl rounded-lg border-2 border-border bg-surface p-8 text-center text-muted"
-			>
-				No services available yet.
-			</div>
+			{@render statusPanel('No services available yet.')}
 		{/if}
 	</div>
 
