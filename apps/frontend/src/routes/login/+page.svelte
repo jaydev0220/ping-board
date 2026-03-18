@@ -1,9 +1,15 @@
 <script lang="ts">
 	import { Eye, EyeOff } from '@lucide/svelte';
-	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { ApiClientError, getAccessToken, login, setAccessToken } from '$lib/api';
+	import { getContext } from 'svelte';
+	import { ApiClientError, login, setAccessToken } from '$lib/api';
+
+	type AuthContext = {
+		readonly state: 'initializing' | 'authenticated' | 'anonymous';
+	};
+
+	const auth = getContext<AuthContext>('auth');
 
 	let showPwd = $state(false);
 	let username = $state('');
@@ -56,11 +62,7 @@
 	}
 
 	$effect(() => {
-		if (!browser) {
-			return;
-		}
-
-		if (getAccessToken()) {
+		if (auth.state === 'authenticated') {
 			void goto(resolve('/'));
 		}
 	});

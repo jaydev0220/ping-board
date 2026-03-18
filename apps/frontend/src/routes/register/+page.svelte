@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { Eye, EyeOff } from '@lucide/svelte';
-	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { ApiClientError, getAccessToken, register } from '$lib/api';
+	import { getContext } from 'svelte';
+	import { ApiClientError, register } from '$lib/api';
 
 	let showPwd = $state(false);
 	let username = $state('');
@@ -14,6 +14,10 @@
 	let successMessage = $state<string | null>(null);
 	const passwordInputType = $derived(showPwd ? 'text' : 'password');
 	const passwordToggleLabel = $derived(showPwd ? '隱藏密碼' : '顯示密碼');
+	type AuthContext = {
+		readonly state: 'initializing' | 'authenticated' | 'anonymous';
+	};
+	const auth = getContext<AuthContext>('auth');
 
 	function switchPwdDisplay() {
 		showPwd = !showPwd;
@@ -64,11 +68,7 @@
 	}
 
 	$effect(() => {
-		if (!browser) {
-			return;
-		}
-
-		if (getAccessToken()) {
+		if (auth.state === 'authenticated') {
 			void goto(resolve('/'));
 		}
 	});

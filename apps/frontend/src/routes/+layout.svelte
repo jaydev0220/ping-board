@@ -61,4 +61,30 @@
 	/>
 </svelte:head>
 
-{@render children()}
+{#if authState === 'initializing'}
+	<div class="grid min-h-dvh place-items-center bg-slate-950/95 px-6">
+		<div
+			class="w-full max-w-md rounded-2xl border border-white/10 bg-white/5 p-6 shadow-2xl backdrop-blur"
+		>
+			<div class="mb-6 flex items-center gap-3">
+				<div class="size-3 animate-pulse rounded-full bg-cyan-400"></div>
+				<div class="h-4 w-40 animate-pulse rounded bg-white/15"></div>
+			</div>
+
+			<div class="space-y-3">
+				<div class="h-3 w-full animate-pulse rounded bg-white/10"></div>
+				<div class="h-3 w-11/12 animate-pulse rounded bg-white/10"></div>
+				<div class="h-3 w-4/5 animate-pulse rounded bg-white/10"></div>
+			</div>
+
+			<div class="mt-6 flex items-center gap-2 text-sm text-white/70">
+				<span
+					class="inline-block size-4 animate-spin rounded-full border-2 border-white/20 border-t-cyan-300"
+				></span>
+				<span>Initializing session...</span>
+			</div>
+		</div>
+	</div>
+{:else}
+	{@render children()}
+{/if}
