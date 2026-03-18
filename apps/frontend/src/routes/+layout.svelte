@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { setContext } from 'svelte';
+	import type { Snippet } from 'svelte';
 	import { clearAccessToken, refresh, setAccessToken } from '$lib/api';
 	import './layout.css';
 
-	let { children } = $props();
-	let authInitStarted = false;
+	let { children } = $props<{ children: Snippet }>();
 	let authState = $state<'initializing' | 'authenticated' | 'anonymous'>('initializing');
+	const canonicalUrl = $derived(`https://www.hsieh-dev.us.ci${page.url.pathname}`);
 
 	async function initializeAuth(): Promise<void> {
 		try {
@@ -27,11 +28,6 @@
 	});
 
 	$effect(() => {
-		if (authInitStarted) {
-			return;
-		}
-
-		authInitStarted = true;
 		void initializeAuth();
 	});
 </script>
@@ -45,7 +41,7 @@
 		property="og:image:alt"
 		content="A white rounded square icon featuring the black Chinese character '哲' in the center, with blue L-shaped corner borders at the top-left and bottom-right."
 	/>
-	<meta property="og:url" content="https://www.hsieh-dev.us.ci{page.url.pathname}" />
+	<meta property="og:url" content={canonicalUrl} />
 	<meta property="og:locale" content="zh_TW" />
 	<meta property="og:locale_alternate" content="en_US" />
 	<meta property="og:site_name" content="謝孟哲 - 全端工程師" />
@@ -56,7 +52,7 @@
 		type="image/x-icon"
 		sizes="any"
 	/>
-	<link rel="canonical" href="https://www.hsieh-dev.us.ci{page.url.pathname}" />
+	<link rel="canonical" href={canonicalUrl} />
 	<link rel="preconnect" href="https://fonts.googleapis.com" />
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
 	<link
