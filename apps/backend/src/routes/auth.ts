@@ -26,7 +26,7 @@ authRouter.post('/register', async (req, res) => {
 
 	if (!parsed.success) {
 		res.status(400).json({
-			error: 'Validation error',
+			error: '無效的註冊資料',
 			details: z.flattenError(parsed.error).fieldErrors
 		});
 		return;
@@ -59,7 +59,7 @@ authRouter.post('/refresh', async (req, res) => {
 	const raw = req.cookies?.refreshToken as string | undefined;
 
 	if (!raw) {
-		res.status(401).json({ error: 'Refresh Token 缺失' });
+		res.status(401).json({ error: '缺少重新整理權杖' });
 		return;
 	}
 

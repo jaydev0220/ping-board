@@ -91,7 +91,7 @@ export async function registerUser(input: RegisterInput): Promise<void> {
 		.get(input.username);
 
 	if (existing !== undefined) {
-		throw new AppError(400, 'Username already taken');
+		throw new AppError(400, '使用者名稱已被使用');
 	}
 
 	const pwdHash = await argon2.hash(input.password);
@@ -113,13 +113,13 @@ export async function loginUser(
 		.get(input.username);
 
 	if (row === undefined) {
-		throw new AppError(401, 'Invalid credentials');
+		throw new AppError(401, '無效的登入資料');
 	}
 
 	const passwordValid = await argon2.verify(row.pwd_hash, input.password);
 
 	if (!passwordValid) {
-		throw new AppError(401, 'Invalid credentials');
+		throw new AppError(401, '無效的登入資料');
 	}
 
 	const user: AuthUser = { id: row.id, username: row.username };
@@ -144,19 +144,19 @@ export async function refreshAccessToken(
 		});
 
 		if (typeof payload.sub !== 'string') {
-			throw new AppError(401, 'Invalid or expired refresh token');
+			throw new AppError(401, '無效或已過期的重新整理權杖');
 		}
 
 		sub = payload.sub;
 	} catch (err) {
 		if (err instanceof AppError) throw err;
-		throw new AppError(401, 'Invalid or expired refresh token');
+		throw new AppError(401, '無效或已過期的重新整理權杖');
 	}
 
 	const userId = parseInt(sub, 10);
 
 	if (!Number.isFinite(userId)) {
-		throw new AppError(401, 'Invalid or expired refresh token');
+		throw new AppError(401, '無效或已過期的重新整理權杖');
 	}
 
 	// Look up hashed token in DB, guard against replay of expired/consumed tokens
@@ -170,7 +170,7 @@ export async function refreshAccessToken(
 		.get(tokenHash, nowSecs);
 
 	if (tokenRow === undefined) {
-		throw new AppError(401, 'Invalid or expired refresh token');
+		throw new AppError(401, '無效或已過期的重新整理權杖');
 	}
 
 	// Atomically mark token as consumed (prevents replay)
@@ -182,7 +182,7 @@ export async function refreshAccessToken(
 
 	if (updateResult.changes === 0) {
 		// Token was already consumed (race condition)
-		throw new AppError(401, 'Invalid or expired refresh token');
+		throw new AppError(401, '無效或已過期的重新整理權杖');
 	}
 
 	// Look up user (guards against cascade-deleted user)
@@ -194,7 +194,7 @@ export async function refreshAccessToken(
 		.get(userId);
 
 	if (userRow === undefined) {
-		throw new AppError(401, 'Invalid or expired refresh token');
+		throw new AppError(401, '無效或已過期的重新整理權杖');
 	}
 
 	// Generate new tokens

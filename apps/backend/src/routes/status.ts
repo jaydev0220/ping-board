@@ -14,7 +14,7 @@ const getAuthenticatedUserId = (userId: number | undefined): number => {
 		!Number.isSafeInteger(userId) ||
 		userId <= 0
 	) {
-		throw new AppError(401, '無效的 Access Token');
+		throw new AppError(401, '無效的存取權杖');
 	}
 	return userId;
 };
@@ -29,7 +29,12 @@ const sendValidationError = (
 	});
 };
 
-const getStatusHistoryCutoffUnixSeconds = (): number =>
+const normalizeStatusFieldErrors = (
+	fieldErrors: Record<string, string[] | undefined>
+): Record<string, string[] | undefined> => ({
+	...fieldErrors,
+	id: fieldErrors['id']?.map(() => '服務 ID 必須為正整數')
+});const getStatusHistoryCutoffUnixSeconds = (): number =>
 	Math.floor(Date.now() / 1000) - STATUS_HISTORY_WINDOW_DAYS * SECONDS_PER_DAY;
 
 statusRouter.get('/:id', async (req, res) => {
@@ -37,7 +42,10 @@ statusRouter.get('/:id', async (req, res) => {
 	const parsedParams = ServiceIdParamsSchema.safeParse(req.params);
 
 	if (!parsedParams.success) {
-		sendValidationError(res, parsedParams.error.flatten().fieldErrors);
+		sendValidationError(
+			res,
+			normalizeStatusFieldErrors(parsedParams.error.flatten().fieldErrors)
+		);
 		return;
 	}
 

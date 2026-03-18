@@ -18,7 +18,7 @@ const createCorsOptions = (): CorsOptions => {
 				return;
 			}
 
-			callback(Object.assign(new Error('Origin not allowed'), { status: 403 }));
+			callback(Object.assign(new Error('來源不被允許'), { status: 403 }));
 		},
 		credentials: true
 	};
