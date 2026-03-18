@@ -16,6 +16,8 @@
 	let isDeleting = $state(false);
 	let errorMessage = $state<string | null>(null);
 
+	const confirmLabel = $derived(isDeleting ? '刪除中...' : '確定');
+
 	const toErrorMessage = (error: unknown): string => {
 		if (error instanceof ApiClientError) {
 			return error.message;
@@ -25,6 +27,12 @@
 		}
 		return 'Failed to delete service.';
 	};
+
+	$effect(() => {
+		if (show) {
+			errorMessage = null;
+		}
+	});
 
 	function handleCancel() {
 		if (isDeleting) {
@@ -36,6 +44,10 @@
 	}
 
 	async function handleDelete() {
+		if (isDeleting) {
+			return;
+		}
+
 		errorMessage = null;
 		isDeleting = true;
 		try {
@@ -79,7 +91,7 @@
 				onclick={handleDelete}
 				disabled={isDeleting}
 			>
-				{isDeleting ? '刪除中...' : '確定'}
+				{confirmLabel}
 			</button>
 		</div>
 	</div>

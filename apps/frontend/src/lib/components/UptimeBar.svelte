@@ -12,6 +12,13 @@
 		onDeleteService: (id: number) => Promise<void>;
 	}
 
+	const MAX_DAYS = 90;
+	const UNKNOWN_DAY: UptimeData = {
+		date: 'Unknown',
+		uptimePercentage: 0,
+		averageLatency: 0
+	};
+
 	let {
 		serviceId,
 		service,
@@ -19,23 +26,33 @@
 		onUpdateService,
 		onDeleteService
 	}: UptimeBarProps = $props();
-	const paddedData = $derived.by(() => {
-		const result = [...uptimeData];
-		const missing = 90 - uptimeData.length;
 
-		if (missing > 0) {
-			for (let i = 0; i < missing; i++) {
-				result.unshift({
-					date: 'Unknown',
-					uptimePercentage: 0,
-					averageLatency: 0
-				});
-			}
-		}
-		return result.slice(-90);
+	const paddedData = $derived.by(() => {
+		const missing = Math.max(0, MAX_DAYS - uptimeData.length);
+		const leadingDays = Array.from({ length: missing }, () => UNKNOWN_DAY);
+		return [...leadingDays, ...uptimeData].slice(-MAX_DAYS);
 	});
+
+	const serviceDescription = $derived(service.description?.trim() || 'No description');
 	let showEditModal = $state(false);
 	let showDeleteConfirmation = $state(false);
+
+	const getBarColorClass = (date: string, uptimePercentage: number): string => {
+		if (date === 'Unknown') {
+			return 'bg-nodata';
+		}
+		if (uptimePercentage < 95) {
+			return 'bg-outage';
+		}
+		if (uptimePercentage < 99.9) {
+			return 'bg-degraded';
+		}
+		return 'bg-healthy';
+	};
+
+	const getBarHeightClass = (date: string): string => {
+		return date === 'Unknown' ? 'h-2' : 'h-full';
+	};
 
 	function handleEdit() {
 		showEditModal = true;
@@ -49,7 +66,7 @@
 <div class="relative z-1 h-fit w-full max-w-5xl rounded-lg border-2 border-border bg-surface p-4">
 	<div class="mb-2 flex h-fit w-full flex-col">
 		<h2 class="w-full justify-baseline text-2xl font-bold">{service.name}</h2>
-		<span class="w-full truncate text-muted">{service.description}</span>
+		<span class="w-full truncate text-muted">{serviceDescription}</span>
 	</div>
 	<div class="absolute top-2 right-2 flex gap-3">
 		<button
@@ -67,18 +84,16 @@
 		</button>
 	</div>
 	<div class=" box-content flex h-8 w-full items-end gap-0.75 overflow-x-auto pb-2">
-		{#each paddedData as { date, uptimePercentage }, i (i)}
+		{#snippet segment(day: UptimeData)}
 			<div
 				class="min-w-1.5 flex-1 rounded-md
-				{date === 'Unknown'
-					? 'bg-nodata'
-					: uptimePercentage < 95
-						? 'bg-outage'
-						: uptimePercentage < 99.9
-							? 'bg-degraded'
-							: 'bg-healthy'}
-				{date === 'Unknown' ? 'h-2' : 'h-full'}"
+				{getBarColorClass(day.date, day.uptimePercentage)}
+				{getBarHeightClass(day.date)}"
 			></div>
+		{/snippet}
+
+		{#each paddedData as day, i (i)}
+			{@render segment(day)}
 		{/each}
 	</div>
 </div>

@@ -25,13 +25,31 @@
 	let description = $state('');
 	let isSaving = $state(false);
 	let errorMessage = $state<string | null>(null);
+	let lastHydratedSignature = $state<string | null>(null);
 
 	const isCreateMode = $derived(mode === 'create');
+	const modalTitle = $derived(isCreateMode ? '新增服務' : '編輯服務');
+	const saveLabel = $derived(isSaving ? '保存中...' : '保存');
+	const isUrlDisabled = $derived(!isCreateMode || isSaving);
+	const serviceSignature = $derived(
+		`${mode}|${service.name}|${service.url}|${service.description ?? ''}|${show}`
+	);
 
 	$effect(() => {
+		if (!show) {
+			lastHydratedSignature = null;
+			return;
+		}
+
+		if (serviceSignature === lastHydratedSignature) {
+			return;
+		}
+
 		name = service.name;
 		url = service.url;
 		description = service.description ?? '';
+		errorMessage = null;
+		lastHydratedSignature = serviceSignature;
 	});
 
 	const toErrorMessage = (error: unknown): string => {
@@ -59,6 +77,10 @@
 	};
 
 	async function handleSave() {
+		if (isSaving) {
+			return;
+		}
+
 		errorMessage = null;
 		const trimmedName = name.trim();
 		const trimmedUrl = url.trim();
@@ -106,7 +128,7 @@
 	<div
 		class="flex w-11/12 max-w-sm flex-col gap-4 rounded-lg border border-border bg-elevated px-6 py-4 text-text"
 	>
-		<h2 class="text-center text-2xl font-bold">{isCreateMode ? '新增服務' : '編輯服務'}</h2>
+		<h2 class="text-center text-2xl font-bold">{modalTitle}</h2>
 
 		{#if errorMessage}
 			<p
@@ -133,7 +155,7 @@
 				bind:value={url}
 				class="h-10 rounded-lg border border-secondary px-2 py-1 text-lg transition-colors duration-300 ease-in-out
 							focus:border-2 focus:outline-0 {!isCreateMode ? 'text-muted' : ''}"
-				disabled={!isCreateMode || isSaving}
+				disabled={isUrlDisabled}
 			/>
 		</label>
 		<label class="flex flex-col gap-2">
@@ -161,7 +183,7 @@
 				onclick={handleSave}
 				disabled={isSaving}
 			>
-				{isSaving ? '保存中...' : '保存'}
+				{saveLabel}
 			</button>
 		</div>
 	</div>
