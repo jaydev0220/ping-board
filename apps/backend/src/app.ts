@@ -19,7 +19,8 @@ const createCorsOptions = (): CorsOptions => {
 			}
 
 			callback(Object.assign(new Error('Origin not allowed'), { status: 403 }));
-		}
+		},
+		credentials: true
 	};
 };
 
