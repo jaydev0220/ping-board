@@ -1,4 +1,5 @@
 import { env } from '$env/dynamic/public';
+import { tryRefreshAndRetry } from './auth.js';
 import type {
 	AuthCredentials,
 	AuthResponse,
@@ -38,6 +39,7 @@ interface ApiRequestOptions<TBody> {
 	body?: TBody;
 	requireAuth?: boolean;
 	includeCredentials?: boolean;
+	_hasRetried401?: boolean;
 }
 
 export function setAccessToken(token: string): void {
@@ -114,7 +116,14 @@ function toApiClientError(status: number, payload: unknown): ApiClientError {
 async function request<TResponse, TBody = undefined>(
 	options: ApiRequestOptions<TBody>
 ): Promise<TResponse> {
-	const { method, path, body, requireAuth = false, includeCredentials = false } = options;
+	const {
+		method,
+		path,
+		body,
+		requireAuth = false,
+		includeCredentials = false,
+		_hasRetried401 = false
+	} = options;
 	const headers = buildHeaders(requireAuth);
 
 	const init: RequestInit = {
@@ -132,6 +141,12 @@ async function request<TResponse, TBody = undefined>(
 	const payload = await parseJsonSafely(response);
 
 	if (!response.ok) {
+		// If 401 on protected endpoint, try refresh + retry
+		if (response.status === 401 && requireAuth && !_hasRetried401) {
+			return tryRefreshAndRetry(() => request({ ...options, _hasRetried401: true }));
+		}
+
+		// Otherwise throw immediately
 		throw toApiClientError(response.status, payload);
 	}
 

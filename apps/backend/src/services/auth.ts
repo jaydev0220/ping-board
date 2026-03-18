@@ -1,10 +1,10 @@
 import argon2 from 'argon2';
 import { SignJWT, jwtVerify } from 'jose';
-import { createHash } from 'node:crypto';
-import { db } from '../db/client.js';
+import { createHash } from 'crypto';
 import { env } from '../config/env.js';
-import type { RegisterInput, LoginInput } from '../schemas/auth.js';
+import { db } from '../db/client.js';
 import { AppError } from '../middleware/error.js';
+import type { RegisterInput, LoginInput } from '../schemas/auth.js';
 
 // ─── Public Types ────────────────────────────────────────────────────────────
 
@@ -134,7 +134,7 @@ export async function loginUser(
 
 export async function refreshAccessToken(
 	rawRefreshToken: string
-): Promise<{ user: AuthUser; accessToken: string }> {
+): Promise<{ user: AuthUser; accessToken: string; refreshToken: string }> {
 	// Verify JWT signature and expiry first
 	let sub: string;
 
@@ -159,17 +159,29 @@ export async function refreshAccessToken(
 		throw new AppError(401, 'Invalid or expired refresh token');
 	}
 
-	// Look up hashed token in DB, guard against replay of expired tokens
+	// Look up hashed token in DB, guard against replay of expired/consumed tokens
 	const nowSecs = Math.floor(Date.now() / 1000);
 	const tokenHash = hashToken(rawRefreshToken);
 	const tokenRow = db
 		.prepare<
 			[string, number],
 			{ id: number }
-		>('SELECT id FROM refresh_tokens WHERE token_hash = ? AND expires_at > ?')
+		>('SELECT id FROM refresh_tokens WHERE token_hash = ? AND expires_at > ? AND consumed_at IS NULL')
 		.get(tokenHash, nowSecs);
 
 	if (tokenRow === undefined) {
+		throw new AppError(401, 'Invalid or expired refresh token');
+	}
+
+	// Atomically mark token as consumed (prevents replay)
+	const updateResult = db
+		.prepare<
+			[number, string]
+		>('UPDATE refresh_tokens SET consumed_at = ? WHERE token_hash = ? AND consumed_at IS NULL')
+		.run(nowSecs, tokenHash);
+
+	if (updateResult.changes === 0) {
+		// Token was already consumed (race condition)
 		throw new AppError(401, 'Invalid or expired refresh token');
 	}
 
@@ -185,7 +197,14 @@ export async function refreshAccessToken(
 		throw new AppError(401, 'Invalid or expired refresh token');
 	}
 
+	// Generate new tokens
 	const user: AuthUser = { id: userRow.id, username: userRow.username };
-	const accessToken = await createAccessToken(userRow.id, userRow.username);
-	return { user, accessToken };
+	const [accessToken, refreshToken] = await Promise.all([
+		createAccessToken(userRow.id, userRow.username),
+		createRefreshToken(userRow.id)
+	]);
+
+	// Store new refresh token
+	storeRefreshToken(userRow.id, refreshToken);
+	return { user, accessToken, refreshToken };
 }

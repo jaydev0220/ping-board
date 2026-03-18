@@ -153,12 +153,23 @@ curl -i -X POST http://127.0.0.1:3001/auth/login \
 
 Exchange refresh cookie for a new access token.
 
+**Token Rotation Behavior:**
+- Each refresh token is **one-time-use only**
+- The endpoint automatically rotates the refresh token:
+  1. Validates the current `refreshToken` cookie
+  2. Marks the old token as consumed (preventing reuse)
+  3. Issues a **NEW** `refreshToken` cookie (httpOnly, secure)
+  4. Returns a new access token in the response body
+
+**Security Note:** Token rotation prevents replay attacks. If an old refresh token is used after rotation, it will be rejected with a `401` error.
+
 Request:
 - No JSON body required
 - Requires `refreshToken` cookie
 
 Success:
 - `200 OK`
+- Sets a NEW `refreshToken` cookie (httpOnly, secure, SameSite=Strict)
 
 ```json
 {
@@ -169,15 +180,17 @@ Success:
 
 Errors:
 - `401` `{"error":"Refresh token missing"}`
-- `401` `{"error":"Invalid or expired refresh token"}`
+- `401` `{"error":"Invalid or expired refresh token"}` (includes consumed tokens)
 - `500` `{"error":"Internal server error"}`
 
 Example:
 
 ```bash
 curl -i -X POST http://127.0.0.1:3001/auth/refresh \
-  -b cookies.txt
+  -b cookies.txt -c cookies.txt
 ```
+
+**Note:** The `-c cookies.txt` flag saves the new refresh token cookie for subsequent requests.
 
 ## Services Endpoints
 

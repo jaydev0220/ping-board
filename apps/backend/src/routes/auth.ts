@@ -1,4 +1,3 @@
-import type { CookieOptions } from 'express';
 import { Router } from 'express';
 import { env } from '../config/env.js';
 import { LoginSchema, RegisterSchema } from '../schemas/auth.js';
@@ -7,6 +6,7 @@ import {
 	refreshAccessToken,
 	registerUser
 } from '../services/auth.js';
+import type { CookieOptions } from 'express';
 
 const REFRESH_COOKIE_NAME = 'refreshToken';
 const COOKIE_OPTIONS: CookieOptions = {
@@ -62,8 +62,9 @@ authRouter.post('/refresh', async (req, res) => {
 		return;
 	}
 
-	const { user, accessToken } = await refreshAccessToken(raw);
+	const { user, accessToken, refreshToken } = await refreshAccessToken(raw);
 
+	res.cookie(REFRESH_COOKIE_NAME, refreshToken, COOKIE_OPTIONS);
 	res
 		.status(200)
 		.json({ user: { id: user.id, username: user.username }, accessToken });

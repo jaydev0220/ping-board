@@ -1,19 +1,30 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import { setContext } from 'svelte';
 	import { clearAccessToken, refresh, setAccessToken } from '$lib/api';
 	import './layout.css';
 
 	let { children } = $props();
 	let authInitStarted = false;
+	let authState = $state<'initializing' | 'authenticated' | 'anonymous'>('initializing');
 
 	async function initializeAuth(): Promise<void> {
 		try {
 			const response = await refresh();
 			setAccessToken(response.accessToken);
+			authState = 'authenticated';
 		} catch {
 			clearAccessToken();
+			authState = 'anonymous';
 		}
 	}
+
+	// Export auth state via context for child routes
+	setContext('auth', {
+		get state() {
+			return authState;
+		}
+	});
 
 	$effect(() => {
 		if (authInitStarted) {

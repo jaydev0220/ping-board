@@ -33,6 +33,7 @@ export interface RegisterResponse {
 export interface AuthResponse {
 	user: AuthUser;
 	accessToken: string;
+	refreshToken?: string; // Optional: for future token rotation in response body
 }
 
 export interface CreateServiceInput {
