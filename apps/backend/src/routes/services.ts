@@ -10,6 +10,8 @@ import {
 	createService,
 	deleteService,
 	getServiceById,
+	getUserServiceCount,
+	getUserServiceQuota,
 	getUserServices,
 	updateService,
 	type CreateServiceData,
@@ -24,7 +26,7 @@ const getAuthenticatedUserId = (userId: number | undefined): number => {
 		!Number.isSafeInteger(userId) ||
 		userId <= 0
 	) {
-		throw new AppError(401, '無效的 Access Token');
+		throw new AppError(401, '無效的存取權杖');
 	}
 	return userId;
 };
@@ -52,6 +54,13 @@ servicesRouter.post('/', async (req, res) => {
 	if (!parsedBody.success) {
 		sendValidationError(res, z.flattenError(parsedBody.error).fieldErrors);
 		return;
+	}
+
+	const userServiceCount = getUserServiceCount(userId);
+	const userServiceQuota = getUserServiceQuota(userId);
+
+	if (userServiceCount >= userServiceQuota) {
+		throw new AppError(400, `已達到服務上限（最多 ${userServiceQuota} 個）`);
 	}
 
 	const createPayload: CreateServiceData =

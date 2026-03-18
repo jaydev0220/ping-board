@@ -41,6 +41,23 @@ const getUserServicesStatement = db.prepare<[userId: number], ServiceRow>(
 			ORDER BY id ASC
 		`
 );
+const getUserServiceCountStatement = db.prepare<[userId: number], { count: number }>(
+	`
+		SELECT COUNT(*) AS count
+		FROM services
+		WHERE created_by = ?
+	`
+);
+const getUserServiceQuotaStatement = db.prepare<
+	[userId: number],
+	{ service_quota: number }
+>(
+	`
+		SELECT service_quota
+		FROM users
+		WHERE id = ?
+	`
+);
 const getServiceByIdStatement = db.prepare<
 	[serviceId: number, userId: number],
 	ServiceRow
@@ -103,6 +120,21 @@ const rowIdToNumber = (rowId: number | bigint): number => {
 
 export const getUserServices = (userId: number): ServiceRow[] =>
 	getUserServicesStatement.all(userId);
+
+export const getUserServiceCount = (userId: number): number =>
+	getUserServiceCountStatement.get(userId)?.count ?? 0;
+
+export const getUserServiceQuota = (userId: number): number => {
+	const serviceQuota = getUserServiceQuotaStatement.get(userId)?.service_quota;
+
+	if (
+		typeof serviceQuota !== 'number' ||
+		!Number.isSafeInteger(serviceQuota) ||
+		serviceQuota < 0
+	) {
+		return 2;
+	}	return serviceQuota;
+};
 
 export const getServiceById = (
 	serviceId: number,
