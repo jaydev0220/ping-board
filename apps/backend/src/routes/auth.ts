@@ -32,7 +32,7 @@ authRouter.post('/register', async (req, res) => {
 	}
 
 	await registerUser(parsed.data);
-	res.status(201).json({ message: 'User registered successfully' });
+	res.status(201).json({ message: '註冊成功' });
 });
 // POST /auth/login
 authRouter.post('/login', async (req, res) => {
@@ -40,7 +40,7 @@ authRouter.post('/login', async (req, res) => {
 
 	if (!parsed.success) {
 		res.status(400).json({
-			error: 'Validation error',
+			error: '無效的登入資料',
 			details: parsed.error.flatten().fieldErrors
 		});
 		return;
@@ -58,7 +58,7 @@ authRouter.post('/refresh', async (req, res) => {
 	const raw = req.cookies?.refreshToken as string | undefined;
 
 	if (!raw) {
-		res.status(401).json({ error: 'Refresh token missing' });
+		res.status(401).json({ error: 'Refresh Token 缺失' });
 		return;
 	}
 

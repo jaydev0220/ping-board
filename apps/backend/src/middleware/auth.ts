@@ -7,7 +7,7 @@ const getSecretKey = (): Uint8Array => new TextEncoder().encode(env.jwtSecret);
 
 const getBearerToken = (authorizationHeader: string | undefined): string => {
 	if (authorizationHeader === undefined) {
-		throw new AppError(401, 'Authorization token missing');
+		throw new AppError(401, 'Access Token 缺失');
 	}
 
 	const [scheme, token, ...rest] = authorizationHeader.split(' ');
@@ -18,20 +18,20 @@ const getBearerToken = (authorizationHeader: string | undefined): string => {
 		token.length === 0 ||
 		rest.length > 0
 	) {
-		throw new AppError(401, 'Invalid authorization header');
+		throw new AppError(401, '無效的驗證標頭');
 	}
 	return token;
 };
 
 const getUserIdFromSub = (sub: unknown): number => {
 	if (typeof sub !== 'string' || !/^\d+$/.test(sub)) {
-		throw new AppError(401, 'Invalid authorization token');
+		throw new AppError(401, '無效的 Access Token');
 	}
 
 	const userId = Number(sub);
 
 	if (!Number.isSafeInteger(userId) || userId <= 0) {
-		throw new AppError(401, 'Invalid authorization token');
+		throw new AppError(401, '無效的 Access Token');
 	}
 	return userId;
 };
@@ -51,7 +51,7 @@ export const verifyJwt: RequestHandler = async (req, _res, next) => {
 			throw error;
 		}
 		if (error instanceof errors.JOSEError) {
-			throw new AppError(401, 'Invalid authorization token');
+			throw new AppError(401, '無效的 Access Token');
 		}
 
 		throw error;

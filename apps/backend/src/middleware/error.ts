@@ -39,9 +39,7 @@ export const errorHandler = (
 
 	const statusCode = getStatusCode(error);
 	const message =
-		statusCode >= 500
-			? 'Internal server error'
-			: error.message || 'Request failed';
+		statusCode >= 500 ? '伺服器內部錯誤' : error.message || '請求失敗';
 
 	res.status(statusCode).json({
 		error: message

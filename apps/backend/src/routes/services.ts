@@ -23,7 +23,7 @@ const getAuthenticatedUserId = (userId: number | undefined): number => {
 		!Number.isSafeInteger(userId) ||
 		userId <= 0
 	) {
-		throw new AppError(401, 'Invalid authorization token');
+		throw new AppError(401, '無效的 Access Token');
 	}
 	return userId;
 };
@@ -33,7 +33,7 @@ const sendValidationError = (
 	fieldErrors: Record<string, string[] | undefined>
 ) => {
 	res.status(400).json({
-		error: 'Validation error',
+		error: '無效的資料',
 		details: fieldErrors
 	});
 };
@@ -93,13 +93,13 @@ servicesRouter.patch('/:id', async (req, res) => {
 	const changes = updateService(parsedParams.data.id, userId, updatePayload);
 
 	if (changes === 0) {
-		throw new AppError(404, 'Service not found');
+		throw new AppError(404, '找不到該服務');
 	}
 
 	const updatedService = getServiceById(parsedParams.data.id, userId);
 
 	if (updatedService === null) {
-		throw new Error('Updated service could not be loaded');
+		throw new Error('無法載入該服務資料');
 	}
 
 	res.status(200).json({ service: updatedService });
@@ -116,7 +116,7 @@ servicesRouter.delete('/:id', async (req, res) => {
 	const changes = deleteService(parsedParams.data.id, userId);
 
 	if (changes === 0) {
-		throw new AppError(404, 'Service not found');
+		throw new AppError(404, '找不到該服務');
 	}
 
 	res.status(204).send();
