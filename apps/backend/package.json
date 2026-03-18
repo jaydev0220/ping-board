@@ -14,7 +14,8 @@
 		"migrate:latest": "knex migrate:latest",
 		"migrate:rollback": "knex migrate:rollback",
 		"test-pinger": "node --experimental-transform-types scripts/test-pinger.ts",
-		"test-auth": "node --experimental-transform-types scripts/test-auth.ts"
+		"test-auth": "node --experimental-transform-types scripts/test-auth.ts",
+		"test-services-quota": "node --experimental-transform-types scripts/test-services-quota.ts"
 	},
 	"dependencies": {
 		"argon2": "catalog:",
