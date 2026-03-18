@@ -15,14 +15,14 @@ description: >
 ```
 apps/frontend/
 ├── src/
-│   ├── app.d.ts                    # SvelteKit ambient types (Locals, PageData, etc.)
+│   ├── app.d.ts                    # SvelteKit ambient types
 │   ├── lib/
 │   │   ├── components/
-│   │   │   ├── UptimeBar.svelte    # 90-day history bar (takes DaySummary[90])
-│   │   │   ├── ServiceCard.svelte  # Card with name, status badge, uptime bar
-│   │   │   └── StatusBadge.svelte  # up/down/unknown dot + label + latency
+│   │   │   ├── UptimeBar.svelte                        # 90-day history bar
+│   │   │   ├── ServiceEditModal.svelte                 # Modal for editing service data.
+│   │   │   └── ServiceDeleteConfirmationModal.svelte   # Modal for service delete confirmation.
 │   │   ├── api.ts                  # Typed fetch wrappers for worker API
-│   │   └── types.ts                # Re-exports from @pingboard/shared
+│   │   └── types.ts
 │   └── routes/
 │       ├── register/
 │       │   └── +page.svelte        # User register page
@@ -30,8 +30,7 @@ apps/frontend/
 │       │   └── +page.svelte        # User login page
 │       ├── layout.css              # Tailwind 4 @import + @theme design tokens
 │       ├── +layout.svelte          # Root layout (font, nav shell)
-│       ├── +page.svelte            # Status page
-│       └── +page.ts                # Client load — fetches /api/status
+│       └── +page.svelte            # Status page
 ├── vite.config.ts                  # sveltekit() + tailwindcss() plugins
 └── svelte.config.js
 ```
