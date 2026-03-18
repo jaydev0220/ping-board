@@ -8,7 +8,6 @@
 	let { children } = $props<{ children: Snippet }>();
 	let authState = $state<'initializing' | 'authenticated' | 'anonymous'>('initializing');
 	const canonicalUrl = $derived(`https://www.hsieh-dev.us.ci${page.url.pathname}`);
-	const skeletonBarIndexes = Array.from({ length: 90 }, (_, index) => index);
 
 	async function initializeAuth(): Promise<void> {
 		try {
@@ -89,18 +88,7 @@
 						</div>
 					</div>
 
-					<div class="space-y-3">
-						<div class="h-4 w-32 animate-pulse rounded bg-border/80"></div>
-						<div class="flex w-full gap-0.5 overflow-hidden">
-							{#each skeletonBarIndexes as index (index)}
-								<div
-									class={`h-9 flex-1 animate-pulse rounded-[2px] ${
-										index % 17 === 0 ? 'bg-destructive/40' : 'bg-primary/35'
-									}`}
-								></div>
-							{/each}
-						</div>
-					</div>
+					<div class="flex h-9 w-full flex-1 animate-pulse gap-0.5 bg-border/35"></div>
 				</div>
 			{/each}
 		</div>
@@ -108,9 +96,7 @@
 		<div class="absolute right-6 bottom-6">
 			<div
 				class="flex h-15 w-15 animate-pulse items-center justify-center rounded-full bg-primary/60"
-			>
-				<div class="h-6 w-6 rounded bg-surface/80"></div>
-			</div>
+			></div>
 		</div>
 	</div>
 {:else}
