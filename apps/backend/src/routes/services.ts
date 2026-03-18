@@ -1,4 +1,5 @@
 import { Router, type Response } from 'express';
+import { z } from 'zod';
 import { AppError } from '../middleware/error.js';
 import {
 	CreateServiceSchema,
@@ -49,7 +50,7 @@ servicesRouter.post('/', async (req, res) => {
 	const parsedBody = CreateServiceSchema.safeParse(req.body);
 
 	if (!parsedBody.success) {
-		sendValidationError(res, parsedBody.error.flatten().fieldErrors);
+		sendValidationError(res, z.flattenError(parsedBody.error).fieldErrors);
 		return;
 	}
 
@@ -70,14 +71,14 @@ servicesRouter.patch('/:id', async (req, res) => {
 	const parsedParams = ServiceIdParamsSchema.safeParse(req.params);
 
 	if (!parsedParams.success) {
-		sendValidationError(res, parsedParams.error.flatten().fieldErrors);
+		sendValidationError(res, z.flattenError(parsedParams.error).fieldErrors);
 		return;
 	}
 
 	const parsedBody = UpdateServiceSchema.safeParse(req.body);
 
 	if (!parsedBody.success) {
-		sendValidationError(res, parsedBody.error.flatten().fieldErrors);
+		sendValidationError(res, z.flattenError(parsedBody.error).fieldErrors);
 		return;
 	}
 
@@ -109,7 +110,7 @@ servicesRouter.delete('/:id', async (req, res) => {
 	const parsedParams = ServiceIdParamsSchema.safeParse(req.params);
 
 	if (!parsedParams.success) {
-		sendValidationError(res, parsedParams.error.flatten().fieldErrors);
+		sendValidationError(res, z.flattenError(parsedParams.error).fieldErrors);
 		return;
 	}
 

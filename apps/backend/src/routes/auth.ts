@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import z from 'zod';
 import { env } from '../config/env.js';
 import { LoginSchema, RegisterSchema } from '../schemas/auth.js';
 import {
@@ -26,7 +27,7 @@ authRouter.post('/register', async (req, res) => {
 	if (!parsed.success) {
 		res.status(400).json({
 			error: 'Validation error',
-			details: parsed.error.flatten().fieldErrors
+			details: z.flattenError(parsed.error).fieldErrors
 		});
 		return;
 	}
@@ -41,7 +42,7 @@ authRouter.post('/login', async (req, res) => {
 	if (!parsed.success) {
 		res.status(400).json({
 			error: '無效的登入資料',
-			details: parsed.error.flatten().fieldErrors
+			details: z.flattenError(parsed.error).fieldErrors
 		});
 		return;
 	}
