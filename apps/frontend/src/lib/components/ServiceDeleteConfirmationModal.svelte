@@ -1,14 +1,51 @@
 <script lang="ts">
+	import { ApiClientError } from '$lib/api';
 	import type { Service } from '$lib/types';
 
-	let { service, show = $bindable(true) }: { service: Service; show: boolean } = $props();
+	interface ServiceDeleteConfirmationModalProps {
+		service: Service;
+		show?: boolean;
+		onConfirm: () => Promise<void>;
+	}
+
+	let {
+		service,
+		show = $bindable(true),
+		onConfirm
+	}: ServiceDeleteConfirmationModalProps = $props();
+	let isDeleting = $state(false);
+	let errorMessage = $state<string | null>(null);
+
+	const toErrorMessage = (error: unknown): string => {
+		if (error instanceof ApiClientError) {
+			return error.message;
+		}
+		if (error instanceof Error) {
+			return error.message;
+		}
+		return 'Failed to delete service.';
+	};
 
 	function handleCancel() {
+		if (isDeleting) {
+			return;
+		}
+
+		errorMessage = null;
 		show = false;
 	}
 
-	function handleDelete() {
-		show = false;
+	async function handleDelete() {
+		errorMessage = null;
+		isDeleting = true;
+		try {
+			await onConfirm();
+			show = false;
+		} catch (error) {
+			errorMessage = toErrorMessage(error);
+		} finally {
+			isDeleting = false;
+		}
 	}
 </script>
 
@@ -20,10 +57,19 @@
 
 		<p class="text-muted">確定要移除 "{service.name}" 嗎？</p>
 
+		{#if errorMessage}
+			<p
+				class="rounded-md border border-destructive/60 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+			>
+				{errorMessage}
+			</p>
+		{/if}
+
 		<div class="mt-2 flex flex-row justify-between text-lg">
 			<button
 				class="cursor-pointer rounded-lg border border-border bg-secondary px-4 py-1"
 				onclick={handleCancel}
+				disabled={isDeleting}
 			>
 				取消
 			</button>
@@ -31,8 +77,9 @@
 				class="cursor-pointer rounded-lg border border-destructive px-4 py-1 text-destructive transition-colors duration-300 ease-in-out
               hover:border-border hover:bg-destructive hover:text-text"
 				onclick={handleDelete}
+				disabled={isDeleting}
 			>
-				確定
+				{isDeleting ? '刪除中...' : '確定'}
 			</button>
 		</div>
 	</div>

@@ -1,20 +1,210 @@
 <script lang="ts">
 	import { Plus } from '@lucide/svelte';
+	import { onMount } from 'svelte';
+	import { browser } from '$app/environment';
+	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
+	import {
+		ApiClientError,
+		getAccessToken,
+		createService,
+		deleteService,
+		getServices,
+		getStatusHistory,
+		refresh,
+		setAccessToken,
+		updateService
+	} from '$lib/api';
+	import ServiceEditModal from '$lib/components/ServiceEditModal.svelte';
 	import UptimeBar from '$lib/components/UptimeBar.svelte';
-	import type { Service } from '$lib/types';
+	import type {
+		CreateServiceInput,
+		Service,
+		ServiceResponse,
+		StatusHistoryRow,
+		UpdateServiceInput,
+		UptimeData
+	} from '$lib/types';
 
-	const services: Service[] = [
-		{
-			name: '服務1',
-			url: 'https://example.com',
-			description: 'This is an example of description.'
-		},
-		{
-			name: '服務2',
-			url: 'https://www.example.com',
-			description: 'This is an example of loooooooooooooooong description.'
+	interface ServiceCardData {
+		id: number;
+		service: Service;
+		uptimeData: UptimeData[];
+	}
+
+	const DAY_IN_SECONDS = 24 * 60 * 60;
+	const STATUS_WINDOW_DAYS = 90;
+
+	let isLoading = $state(true);
+	let errorMessage = $state<string | null>(null);
+	let mutationErrorMessage = $state<string | null>(null);
+	let showCreateModal = $state(false);
+	let services = $state<ServiceCardData[]>([]);
+
+	const transformStatusHistoryToUptimeData = (
+		statusHistory: StatusHistoryRow[],
+		nowUnixSeconds: number
+	): UptimeData[] => {
+		const cutoff = nowUnixSeconds - STATUS_WINDOW_DAYS * DAY_IN_SECONDS;
+		const groupedByDate: Record<
+			string,
+			{
+				totalChecks: number;
+				upChecks: number;
+				latencyTotal: number;
+				latencyCount: number;
+			}
+		> = {};
+
+		for (const row of statusHistory) {
+			if (row.checked_at < cutoff) {
+				continue;
+			}
+
+			const dayKey = new Date(row.checked_at * 1000).toISOString().slice(0, 10);
+			const daySummary = groupedByDate[dayKey] ?? {
+				totalChecks: 0,
+				upChecks: 0,
+				latencyTotal: 0,
+				latencyCount: 0
+			};
+
+			daySummary.totalChecks += 1;
+
+			if (row.is_up === 1) {
+				daySummary.upChecks += 1;
+			}
+
+			if (typeof row.latency_ms === 'number') {
+				daySummary.latencyTotal += row.latency_ms;
+				daySummary.latencyCount += 1;
+			}
+
+			groupedByDate[dayKey] = daySummary;
 		}
-	];
+
+		return Object.entries(groupedByDate)
+			.sort(([left], [right]) => left.localeCompare(right))
+			.map(([date, summary]) => {
+				const uptimePercentage = (summary.upChecks / summary.totalChecks) * 100;
+				const averageLatency =
+					summary.latencyCount > 0 ? summary.latencyTotal / summary.latencyCount : 0;
+
+				return {
+					date,
+					uptimePercentage: Math.round(uptimePercentage * 100) / 100,
+					averageLatency: Math.round(averageLatency)
+				};
+			});
+	};
+
+	const toServiceViewModel = (service: ServiceResponse): Service => ({
+		name: service.name,
+		url: service.url,
+		description: service.description ?? undefined
+	});
+
+	const toErrorMessage = (error: unknown): string => {
+		if (error instanceof ApiClientError) {
+			return error.message;
+		}
+		if (error instanceof Error) {
+			return error.message;
+		}
+		return 'Failed to load dashboard data.';
+	};
+
+	const ensureAccessToken = async (): Promise<void> => {
+		if (getAccessToken()) {
+			return;
+		}
+
+		const response = await refresh();
+		setAccessToken(response.accessToken);
+	};
+
+	const loadDashboardData = async (): Promise<void> => {
+		isLoading = true;
+		errorMessage = null;
+
+		try {
+			await ensureAccessToken();
+			const nowUnixSeconds = Math.floor(Date.now() / 1000);
+			const { services: serviceRows } = await getServices();
+			const statusHistories = await Promise.all(
+				serviceRows.map((service) => getStatusHistory(service.id))
+			);
+
+			services = serviceRows.map((service, index) => ({
+				id: service.id,
+				service: toServiceViewModel(service),
+				uptimeData: transformStatusHistoryToUptimeData(
+					statusHistories[index].statusHistory,
+					nowUnixSeconds
+				)
+			}));
+		} catch (error) {
+			services = [];
+			errorMessage = toErrorMessage(error);
+		} finally {
+			isLoading = false;
+		}
+	};
+
+	const handleCreateService = async (input: CreateServiceInput): Promise<void> => {
+		mutationErrorMessage = null;
+		try {
+			await ensureAccessToken();
+			await createService(input);
+			await loadDashboardData();
+		} catch (error) {
+			mutationErrorMessage = toErrorMessage(error);
+			throw error;
+		}
+	};
+
+	const handleUpdateService = async (id: number, input: UpdateServiceInput): Promise<void> => {
+		mutationErrorMessage = null;
+		try {
+			await ensureAccessToken();
+			await updateService(id, input);
+			await loadDashboardData();
+		} catch (error) {
+			mutationErrorMessage = toErrorMessage(error);
+			throw error;
+		}
+	};
+
+	const handleDeleteService = async (id: number): Promise<void> => {
+		mutationErrorMessage = null;
+		try {
+			await ensureAccessToken();
+			await deleteService(id);
+			await loadDashboardData();
+		} catch (error) {
+			mutationErrorMessage = toErrorMessage(error);
+			throw error;
+		}
+	};
+
+	const openCreateModal = (): void => {
+		mutationErrorMessage = null;
+		showCreateModal = true;
+	};
+
+	$effect(() => {
+		if (!browser) {
+			return;
+		}
+
+		void loadDashboardData();
+	});
+
+	onMount(() => {
+		if (!getAccessToken()) {
+			void goto(resolve('/login'));
+		}
+	});
 </script>
 
 <div class="relative flex h-dvh w-dvw flex-col items-center">
@@ -24,17 +214,64 @@
 		Ping Board
 	</header>
 	<div class="flex w-full flex-col items-center gap-6 px-4">
-		{#each services as service (service.url)}
-			<UptimeBar {service} />
-		{/each}
+		{#if mutationErrorMessage}
+			<div
+				class="w-full max-w-5xl rounded-lg border-2 border-destructive bg-surface p-4 text-center text-destructive"
+				role="alert"
+			>
+				{mutationErrorMessage}
+			</div>
+		{/if}
+
+		{#if isLoading}
+			<div
+				class="w-full max-w-5xl rounded-lg border-2 border-border bg-surface p-8 text-center text-muted"
+			>
+				Loading services...
+			</div>
+		{:else if errorMessage}
+			<div
+				class="w-full max-w-5xl rounded-lg border-2 border-destructive bg-surface p-8 text-center text-destructive"
+				role="alert"
+			>
+				{errorMessage}
+			</div>
+		{:else if services.length > 0}
+			{#each services as item (item.id)}
+				<UptimeBar
+					serviceId={item.id}
+					service={item.service}
+					uptimeData={item.uptimeData}
+					onUpdateService={handleUpdateService}
+					onDeleteService={handleDeleteService}
+				/>
+			{/each}
+		{:else}
+			<div
+				class="w-full max-w-5xl rounded-lg border-2 border-border bg-surface p-8 text-center text-muted"
+			>
+				No services available yet.
+			</div>
+		{/if}
 	</div>
 
 	<div class="absolute right-6 bottom-6">
 		<button
 			class="flex h-15 w-15 cursor-pointer items-center justify-center rounded-full bg-primary transition-transform duration-300
 						ease-in-out hover:scale-110"
+			onclick={openCreateModal}
+			aria-label="Add service"
 		>
 			<Plus size={34} />
 		</button>
 	</div>
 </div>
+
+{#if showCreateModal}
+	<ServiceEditModal
+		mode="create"
+		service={{ name: '', url: '', description: '' }}
+		bind:show={showCreateModal}
+		onCreate={handleCreateService}
+	/>
+{/if}

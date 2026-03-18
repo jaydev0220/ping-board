@@ -1,8 +1,28 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import { clearAccessToken, refresh, setAccessToken } from '$lib/api';
 	import './layout.css';
 
 	let { children } = $props();
+	let authInitStarted = false;
+
+	async function initializeAuth(): Promise<void> {
+		try {
+			const response = await refresh();
+			setAccessToken(response.accessToken);
+		} catch {
+			clearAccessToken();
+		}
+	}
+
+	$effect(() => {
+		if (authInitStarted) {
+			return;
+		}
+
+		authInitStarted = true;
+		void initializeAuth();
+	});
 </script>
 
 <svelte:head>

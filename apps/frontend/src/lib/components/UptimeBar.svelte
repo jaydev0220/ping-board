@@ -1,13 +1,24 @@
 <script lang="ts">
 	import { SquarePen, Trash2 } from '@lucide/svelte';
-	import { getUptimeData } from '$lib/api';
 	import ServiceEditModal from '$lib/components/ServiceEditModal.svelte';
-	import type { Service } from '$lib/types';
-	import ServiceDeleteConfirmationModal from './ServiceDeleteConfirmationModal.svelte';
+	import ServiceDeleteConfirmationModal from '$lib/components/ServiceDeleteConfirmationModal.svelte';
+	import type { Service, UpdateServiceInput, UptimeData } from '$lib/types';
 
-	let { service }: { service: Service } = $props();
-	// svelte-ignore state_referenced_locally
-	const uptimeData = getUptimeData(service);
+	interface UptimeBarProps {
+		serviceId: number;
+		service: Service;
+		uptimeData?: UptimeData[];
+		onUpdateService: (id: number, input: UpdateServiceInput) => Promise<void>;
+		onDeleteService: (id: number) => Promise<void>;
+	}
+
+	let {
+		serviceId,
+		service,
+		uptimeData = [],
+		onUpdateService,
+		onDeleteService
+	}: UptimeBarProps = $props();
 	const paddedData = $derived.by(() => {
 		const result = [...uptimeData];
 		const missing = 90 - uptimeData.length;
@@ -24,14 +35,14 @@
 		return result.slice(-90);
 	});
 	let showEditModal = $state(false);
-	let showDelteConfirmation = $state(false);
+	let showDeleteConfirmation = $state(false);
 
 	function handleEdit() {
 		showEditModal = true;
 	}
 
 	function handleDelete() {
-		showDelteConfirmation = true;
+		showDeleteConfirmation = true;
 	}
 </script>
 
@@ -73,9 +84,18 @@
 </div>
 
 {#if showEditModal}
-	<ServiceEditModal {service} bind:show={showEditModal} />
+	<ServiceEditModal
+		mode="edit"
+		{service}
+		bind:show={showEditModal}
+		onUpdate={(input) => onUpdateService(serviceId, input)}
+	/>
 {/if}
 
-{#if showDelteConfirmation}
-	<ServiceDeleteConfirmationModal {service} bind:show={showDelteConfirmation} />
+{#if showDeleteConfirmation}
+	<ServiceDeleteConfirmationModal
+		{service}
+		bind:show={showDeleteConfirmation}
+		onConfirm={() => onDeleteService(serviceId)}
+	/>
 {/if}

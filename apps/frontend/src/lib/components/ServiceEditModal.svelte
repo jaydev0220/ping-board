@@ -1,14 +1,104 @@
 <script lang="ts">
-	import type { Service } from '$lib/types';
+	import { ApiClientError } from '$lib/api';
+	import type { CreateServiceInput, Service, UpdateServiceInput } from '$lib/types';
 
-	let { service, show = $bindable(true) }: { service: Service; show: boolean } = $props();
+	type ModalMode = 'create' | 'edit';
+
+	interface ServiceEditModalProps {
+		mode?: ModalMode;
+		service: Service;
+		show?: boolean;
+		onCreate?: (input: CreateServiceInput) => Promise<void>;
+		onUpdate?: (input: UpdateServiceInput) => Promise<void>;
+	}
+
+	let {
+		mode = 'edit',
+		service,
+		show = $bindable(true),
+		onCreate,
+		onUpdate
+	}: ServiceEditModalProps = $props();
+
+	let name = $state('');
+	let url = $state('');
+	let description = $state('');
+	let isSaving = $state(false);
+	let errorMessage = $state<string | null>(null);
+
+	const isCreateMode = $derived(mode === 'create');
+
+	$effect(() => {
+		name = service.name;
+		url = service.url;
+		description = service.description ?? '';
+	});
+
+	const toErrorMessage = (error: unknown): string => {
+		if (error instanceof ApiClientError) {
+			return error.message;
+		}
+		if (error instanceof Error) {
+			return error.message;
+		}
+		return 'Failed to save service.';
+	};
 
 	function handleCancel() {
+		if (isSaving) {
+			return;
+		}
+
+		errorMessage = null;
 		show = false;
 	}
 
-	function handleSave() {
-		show = false;
+	const normalizeDescription = (value: string): string | undefined => {
+		const trimmed = value.trim();
+		return trimmed.length > 0 ? trimmed : undefined;
+	};
+
+	async function handleSave() {
+		errorMessage = null;
+		const trimmedName = name.trim();
+		const trimmedUrl = url.trim();
+
+		if (trimmedName.length === 0) {
+			errorMessage = 'Service name is required.';
+			return;
+		}
+
+		if (isCreateMode && trimmedUrl.length === 0) {
+			errorMessage = 'Service URL is required.';
+			return;
+		}
+
+		isSaving = true;
+		try {
+			if (isCreateMode) {
+				if (!onCreate) {
+					throw new Error('Create handler is not configured.');
+				}
+				await onCreate({
+					name: trimmedName,
+					url: trimmedUrl,
+					description: normalizeDescription(description)
+				});
+			} else {
+				if (!onUpdate) {
+					throw new Error('Update handler is not configured.');
+				}
+				await onUpdate({
+					name: trimmedName,
+					description: normalizeDescription(description)
+				});
+			}
+			show = false;
+		} catch (error) {
+			errorMessage = toErrorMessage(error);
+		} finally {
+			isSaving = false;
+		}
 	}
 </script>
 
@@ -16,34 +106,44 @@
 	<div
 		class="flex w-11/12 max-w-sm flex-col gap-4 rounded-lg border border-border bg-elevated px-6 py-4 text-text"
 	>
-		<h2 class="text-center text-2xl font-bold">編輯服務</h2>
+		<h2 class="text-center text-2xl font-bold">{isCreateMode ? '新增服務' : '編輯服務'}</h2>
+
+		{#if errorMessage}
+			<p
+				class="rounded-md border border-destructive/60 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+			>
+				{errorMessage}
+			</p>
+		{/if}
 
 		<label class="flex flex-col gap-2">
 			名稱
 			<input
 				type="text"
-				value={service.name}
+				bind:value={name}
 				class="h-10 rounded-lg border border-secondary px-2 py-1 text-lg transition-colors duration-300 ease-in-out
 							focus:border-2 focus:outline-0"
+				disabled={isSaving}
 			/>
 		</label>
 		<label class="flex flex-col gap-2">
 			連結
 			<input
 				type="text"
-				value={service.url}
-				class="h-10 rounded-lg border border-secondary px-2 py-1 text-lg text-muted transition-colors duration-300
-							ease-in-out focus:border-2 focus:outline-0"
-				disabled
+				bind:value={url}
+				class="h-10 rounded-lg border border-secondary px-2 py-1 text-lg transition-colors duration-300 ease-in-out
+							focus:border-2 focus:outline-0 {!isCreateMode ? 'text-muted' : ''}"
+				disabled={!isCreateMode || isSaving}
 			/>
 		</label>
 		<label class="flex flex-col gap-2">
 			描述
 			<input
 				type="text"
-				value={service.description}
+				bind:value={description}
 				class="h-10 rounded-lg border border-secondary px-2 py-1 text-lg transition-colors duration-300 ease-in-out
 							focus:border-2 focus:outline-0"
+				disabled={isSaving}
 			/>
 		</label>
 
@@ -52,14 +152,16 @@
 				class="cursor-pointer rounded-lg border border-border bg-secondary px-4 py-1 transition-transform ease-in-out
 							hover:scale-102"
 				onclick={handleCancel}
+				disabled={isSaving}
 			>
 				取消
 			</button>
 			<button
 				class="cursor-pointer rounded-lg border border-border bg-primary px-4 py-1 duration-300 ease-in-out hover:scale-102"
 				onclick={handleSave}
+				disabled={isSaving}
 			>
-				保存
+				{isSaving ? '保存中...' : '保存'}
 			</button>
 		</div>
 	</div>

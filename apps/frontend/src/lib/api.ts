@@ -1,52 +1,212 @@
-import type { Service, StatusHistoryRow } from './types';
+import { env } from '$env/dynamic/public';
+import type {
+	AuthCredentials,
+	AuthResponse,
+	CreateServiceInput,
+	RegisterResponse,
+	ServiceResponseEnvelope,
+	ServiceStatusResponse,
+	ServicesResponse,
+	UpdateServiceInput
+} from './types';
 
-function getStatusHistory(_service: Service): StatusHistoryRow[] {
-	const history: StatusHistoryRow[] = [];
-	const days = Math.random() * 90 + 1;
-	const now = Date.now();
-	const startTime = now - days * 24 * 60 * 60 * 1000;
+const API_BASE_URL = (env.PUBLIC_API_BASE_URL ?? 'http://127.0.0.1:3001').replace(/\/+$/, '');
+let accessToken: string | null = null;
 
-	for (let i = 0; i < days; i++) {
-		for (let j = 0; j < 288; j++) {
-			const checked_at = startTime + (i * 288 + j) * 5 * 60 * 1000;
-			const is_up = Math.random() > 0.001 ? 1 : 0;
-
-			history.push({
-				is_up,
-				status_code: is_up ? 200 : 500,
-				latency_ms: is_up ? Math.floor(Math.random() * 500 + 20) : null,
-				checked_at
-			});
-		}
-	}
-
-	return history.sort((a, b) => b.checked_at - a.checked_at);
+export interface ApiErrorPayload {
+	error: string;
+	details?: Record<string, unknown>;
 }
 
-export function getUptimeData(service: Service) {
-	const grouped = new Map<string, { upCount: number; total: number; totalLatency: number }>();
-	const statusHistory = getStatusHistory(service);
+export class ApiClientError extends Error {
+	status: number;
+	details?: Record<string, unknown>;
 
-	for (let i = 0; i < statusHistory.length; i++) {
-		const history = statusHistory[i];
-		const date = new Date(history.checked_at).toISOString().slice(0, 10);
+	constructor(status: number, message: string, details?: Record<string, unknown>) {
+		super(message);
+		this.name = 'ApiClientError';
+		this.status = status;
+		this.details = details;
+	}
+}
 
-		if (!grouped.has(date)) {
-			grouped.set(date, { upCount: 0, total: 0, totalLatency: 0 });
-		}
+type HttpMethod = 'GET' | 'POST' | 'PATCH' | 'DELETE';
 
-		const entry = grouped.get(date)!;
-		entry.total++;
+interface ApiRequestOptions<TBody> {
+	method: HttpMethod;
+	path: string;
+	body?: TBody;
+	requireAuth?: boolean;
+	includeCredentials?: boolean;
+}
 
-		if (history.is_up) {
-			entry.upCount++;
-			entry.totalLatency += history.latency_ms ?? 0;
-		}
+export function setAccessToken(token: string): void {
+	accessToken = token;
+}
+
+export function getAccessToken(): string | null {
+	return accessToken;
+}
+
+export function clearAccessToken(): void {
+	accessToken = null;
+}
+
+function isApiErrorPayload(value: unknown): value is ApiErrorPayload {
+	if (!value || typeof value !== 'object') {
+		return false;
 	}
 
-	return Array.from(grouped.entries()).map(([date, { upCount, total, totalLatency }]) => ({
-		date,
-		uptimePercentage: (upCount / total) * 100,
-		averageLatency: upCount > 0 ? totalLatency / upCount : 0
-	}));
+	const payload = value as Partial<ApiErrorPayload>;
+	return typeof payload.error === 'string';
+}
+
+function buildHeaders(requireAuth: boolean): Headers {
+	const headers = new Headers({
+		Accept: 'application/json'
+	});
+
+	if (requireAuth) {
+		if (!accessToken) {
+			throw new ApiClientError(401, 'Authorization token missing');
+		}
+		headers.set('Authorization', `Bearer ${accessToken}`);
+	}
+
+	return headers;
+}
+
+function toUrl(path: string): string {
+	return `${API_BASE_URL}${path}`;
+}
+
+function assertPositiveId(id: number): void {
+	if (!Number.isInteger(id) || id <= 0) {
+		throw new TypeError('id must be a positive integer');
+	}
+}
+
+async function parseJsonSafely(response: Response): Promise<unknown | null> {
+	if (response.status === 204) {
+		return null;
+	}
+
+	const contentType = response.headers.get('content-type') ?? '';
+	if (!contentType.toLowerCase().includes('application/json')) {
+		return null;
+	}
+
+	try {
+		return await response.json();
+	} catch {
+		return null;
+	}
+}
+
+function toApiClientError(status: number, payload: unknown): ApiClientError {
+	if (isApiErrorPayload(payload)) {
+		return new ApiClientError(status, payload.error, payload.details);
+	}
+
+	return new ApiClientError(status, 'Unexpected API error response');
+}
+
+async function request<TResponse, TBody = undefined>(
+	options: ApiRequestOptions<TBody>
+): Promise<TResponse> {
+	const { method, path, body, requireAuth = false, includeCredentials = false } = options;
+	const headers = buildHeaders(requireAuth);
+
+	const init: RequestInit = {
+		method,
+		headers,
+		credentials: includeCredentials ? 'include' : 'same-origin'
+	};
+
+	if (body !== undefined) {
+		headers.set('Content-Type', 'application/json');
+		init.body = JSON.stringify(body);
+	}
+
+	const response = await fetch(toUrl(path), init);
+	const payload = await parseJsonSafely(response);
+
+	if (!response.ok) {
+		throw toApiClientError(response.status, payload);
+	}
+
+	return payload as TResponse;
+}
+
+export function register(input: AuthCredentials): Promise<RegisterResponse> {
+	return request<RegisterResponse, AuthCredentials>({
+		method: 'POST',
+		path: '/auth/register',
+		body: input
+	});
+}
+
+export function login(input: AuthCredentials): Promise<AuthResponse> {
+	return request<AuthResponse, AuthCredentials>({
+		method: 'POST',
+		path: '/auth/login',
+		body: input,
+		includeCredentials: true
+	});
+}
+
+export function refresh(): Promise<AuthResponse> {
+	return request<AuthResponse>({
+		method: 'POST',
+		path: '/auth/refresh',
+		includeCredentials: true
+	});
+}
+
+export function getServices(): Promise<ServicesResponse> {
+	return request<ServicesResponse>({
+		method: 'GET',
+		path: '/services',
+		requireAuth: true
+	});
+}
+
+export function createService(input: CreateServiceInput): Promise<ServiceResponseEnvelope> {
+	return request<ServiceResponseEnvelope, CreateServiceInput>({
+		method: 'POST',
+		path: '/services',
+		body: input,
+		requireAuth: true
+	});
+}
+
+export function updateService(
+	id: number,
+	input: UpdateServiceInput
+): Promise<ServiceResponseEnvelope> {
+	assertPositiveId(id);
+	return request<ServiceResponseEnvelope, UpdateServiceInput>({
+		method: 'PATCH',
+		path: `/services/${id}`,
+		body: input,
+		requireAuth: true
+	});
+}
+
+export async function deleteService(id: number): Promise<void> {
+	assertPositiveId(id);
+	await request<null>({
+		method: 'DELETE',
+		path: `/services/${id}`,
+		requireAuth: true
+	});
+}
+
+export function getStatusHistory(id: number): Promise<ServiceStatusResponse> {
+	assertPositiveId(id);
+	return request<ServiceStatusResponse>({
+		method: 'GET',
+		path: `/status/${id}`,
+		requireAuth: true
+	});
 }
