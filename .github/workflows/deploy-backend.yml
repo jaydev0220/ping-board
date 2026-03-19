@@ -57,8 +57,13 @@ jobs:
           chmod 600 ~/.ssh/id_ed25519
           cat >> ~/.ssh/config << EOF
           Host ${{ secrets.SSH_HOST }}
-            StrictHostKeyChecking=no
-            ProxyCommand cloudflared access tcp --hostname %h --id ${{ secrets.CF_ACCESS_CLIENT_ID }} --secret ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
+            StrictHostKeyChecking no
+            ProxyCommand cloudflared access tcp \
+              --hostname %h \
+              --id ${{ secrets.CF_ACCESS_CLIENT_ID }} \
+              --secret ${{ secrets.CF_ACCESS_CLIENT_SECRET }} \
+              --loglevel debug \
+              --output /tmp/cf.log
           EOF
 
       - name: Deploy to RPi
@@ -74,3 +79,6 @@ jobs:
             -p 3000:3000 \
             ghcr.io/${{ env.IMAGE_NAME }}:latest
           "
+
+      - name: Debug
+        run: cat /tmp/cf.log
