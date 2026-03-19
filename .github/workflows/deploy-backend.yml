@@ -53,6 +53,8 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           private_key_filename: id_ed25519
           private_key_value: ${{ secrets.SSH_PRIVATE_KEY }}
+          service_token_id: ${{ secrets.CF_ACCESS_CLIENT_ID }}
+          service_token_secret: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
           commands: |
             sudo docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
             sudo docker stop ${{ env.CONTAINER_NAME }} || true
