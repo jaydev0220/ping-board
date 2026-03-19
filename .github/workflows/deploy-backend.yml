@@ -78,7 +78,4 @@ jobs:
             --restart unless-stopped \
             -p 3000:3000 \
             ghcr.io/${{ env.IMAGE_NAME }}:latest
-          "
-
-      - name: Debug
-        run: cat /tmp/cf.log
+          " & cat /tmp/cf.log
