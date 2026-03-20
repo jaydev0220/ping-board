@@ -1,34 +1,35 @@
 {
-	"name": "ping-board",
-	"version": "0.0.1",
-	"author": "Jay",
-	"license": "MIT",
-	"private": true,
-	"scripts": {
-		"dev": "pnpm -r dev",
-		"build": "pnpm -r build",
-		"lint": "pnpm -r lint",
-		"format": "pnpm -r format",
-		"migrate:make": "pnpm --filter backend migrate:make",
-		"migrate:latest:dev": "pnpm --filter backend migrate:latest --env development",
-		"migrate:latest:prod": "pnpm --filter backend migrate:latest --env production",
-		"migrate:rollback:dev": "pnpm --filter backend migrate:rollback --env development",
-		"migrate:rollback:prod": "pnpm --filter backend migrate:rollback --env production"
-	},
-	"dependencies": {
-		"better-sqlite3": "catalog:",
-		"cors": "catalog:",
-		"express": "catalog:",
-		"helmet": "catalog:",
-		"knex": "catalog:",
-		"zod": "catalog:"
-	},
-	"devDependencies": {
-		"@eslint/compat": "catalog:",
-		"@types/cors": "catalog:",
-		"@types/express": "catalog:",
-		"@types/node": "catalog:",
-		"prettier": "catalog:",
-		"typescript": "catalog:"
-	}
+  "name": "ping-board",
+  "description": "A distributed URL uptime monitoring service with status pages. Ping Board continuously monitors registered services, logs uptime and latency data, and displays 90-day historical trends on a responsive dashboard.",
+  "version": "0.0.1",
+  "author": "Jay",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm -r dev",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint",
+    "format": "pnpm -r format",
+    "migrate:make": "pnpm --filter backend migrate:make",
+    "migrate:latest:dev": "pnpm --filter backend migrate:latest --env development",
+    "migrate:latest:prod": "pnpm --filter backend migrate:latest --env production",
+    "migrate:rollback:dev": "pnpm --filter backend migrate:rollback --env development",
+    "migrate:rollback:prod": "pnpm --filter backend migrate:rollback --env production"
+  },
+  "dependencies": {
+    "better-sqlite3": "catalog:",
+    "cors": "catalog:",
+    "express": "catalog:",
+    "helmet": "catalog:",
+    "knex": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@eslint/compat": "catalog:",
+    "@types/cors": "catalog:",
+    "@types/express": "catalog:",
+    "@types/node": "catalog:",
+    "prettier": "catalog:",
+    "typescript": "catalog:"
+  }
 }
