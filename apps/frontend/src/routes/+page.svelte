@@ -211,6 +211,18 @@
 	});
 </script>
 
+<svelte:head>
+	<meta
+		name="description"
+		content="Monitor your services with Ping Board. Track uptime, latency, and status history over 90 days. Reliable URL monitoring and status page management."
+	/>
+	<meta
+		property="og:description"
+		content="Monitor your services with Ping Board. Track uptime, latency, and status history over 90 days. Reliable URL monitoring and status page management."
+	/>
+	<title>Dashboard | Ping Board</title>
+</svelte:head>
+
 {#snippet statusPanel(message: string, tone: 'default' | 'destructive' = 'default')}
 	<div
 		class={`w-full max-w-5xl rounded-lg border-2 bg-surface p-8 text-center ${

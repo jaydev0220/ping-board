@@ -68,6 +68,18 @@
 	});
 </script>
 
+<svelte:head>
+	<meta
+		name="description"
+		content="Sign in to Ping Board. Access your service monitoring dashboard and track real-time uptime status."
+	/>
+	<meta
+		property="og:description"
+		content="Sign in to Ping Board. Access your service monitoring dashboard and track real-time uptime status."
+	/>
+	<title>Login | Ping Board</title>
+</svelte:head>
+
 {#snippet visibilityIcon(isVisible: boolean)}
 	{#if isVisible}
 		<Eye size={20} />

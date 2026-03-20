@@ -74,6 +74,18 @@
 	});
 </script>
 
+<svelte:head>
+	<meta
+		name="description"
+		content="Create a Ping Board account. Start monitoring your services, track uptime, and manage status pages for free."
+	/>
+	<meta
+		property="og:description"
+		content="Create a Ping Board account. Start monitoring your services, track uptime, and manage status pages for free."
+	/>
+	<title>Register | Ping Board</title>
+</svelte:head>
+
 {#snippet visibilityIcon(isVisible: boolean)}
 	{#if isVisible}
 		<Eye size={20} />
