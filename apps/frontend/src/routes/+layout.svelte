@@ -2,19 +2,42 @@
 	import { page } from '$app/state';
 	import { setContext } from 'svelte';
 	import type { Snippet } from 'svelte';
+	import Toast from '$lib/components/Toast.svelte';
 	import { clearAccessToken, refresh, setAccessToken } from '$lib/api';
+	import { AUTH_REFRESH_ERROR_EVENT, shouldNotifyAuthError } from '$lib/auth';
 	import './layout.css';
 
 	let { children } = $props<{ children: Snippet }>();
 	let authState = $state<'initializing' | 'authenticated' | 'anonymous'>('initializing');
+	let toastVisible = $state(false);
+	let toastMessage = $state('');
+	let toastTimeoutId = $state<ReturnType<typeof setTimeout> | null>(null);
 	const canonicalUrl = $derived(`https://www.hsieh-dev.us.ci${page.url.pathname}`);
+
+	function showErrorToast(message: string): void {
+		toastMessage = message;
+		toastVisible = true;
+
+		if (toastTimeoutId) {
+			clearTimeout(toastTimeoutId);
+		}
+
+		toastTimeoutId = setTimeout(() => {
+			toastVisible = false;
+			toastTimeoutId = null;
+		}, 5000);
+	}
 
 	async function initializeAuth(): Promise<void> {
 		try {
 			const response = await refresh();
 			setAccessToken(response.accessToken);
 			authState = 'authenticated';
-		} catch {
+		} catch (error) {
+			if (shouldNotifyAuthError(error)) {
+				console.error('Initial auth refresh failed with server error', error);
+				showErrorToast('Unable to refresh your session due to a server error.');
+			}
 			clearAccessToken();
 			authState = 'anonymous';
 		}
@@ -29,6 +52,27 @@
 
 	$effect(() => {
 		void initializeAuth();
+	});
+
+	$effect(() => {
+		if (typeof window === 'undefined') {
+			return;
+		}
+
+		const handleAuthRefreshError = (event: Event) => {
+			const { detail } = event as CustomEvent<{ message: string }>;
+			showErrorToast(detail.message);
+		};
+
+		window.addEventListener(AUTH_REFRESH_ERROR_EVENT, handleAuthRefreshError);
+
+		return () => {
+			window.removeEventListener(AUTH_REFRESH_ERROR_EVENT, handleAuthRefreshError);
+			if (toastTimeoutId) {
+				clearTimeout(toastTimeoutId);
+				toastTimeoutId = null;
+			}
+		};
 	});
 </script>
 
@@ -102,3 +146,5 @@
 {:else}
 	{@render children()}
 {/if}
+
+<Toast visible={toastVisible} message={toastMessage} type="error" />
