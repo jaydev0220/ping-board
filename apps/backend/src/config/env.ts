@@ -22,7 +22,7 @@ const envSchema = rawEnvSchema.transform((input, ctx) => {
 	for (const origin of corsAllowedOrigins) {
 		if (!z.url().safeParse(origin).success) {
 			ctx.addIssue({
-				code: z.ZodIssueCode.custom,
+				code: 'custom',
 				path: ['CORS_ALLOWED_ORIGINS'],
 				message: `Invalid origin "${origin}". Expected a comma-separated list of absolute URLs.`
 			});
@@ -31,7 +31,7 @@ const envSchema = rawEnvSchema.transform((input, ctx) => {
 
 	if (input.NODE_ENV === 'production' && corsAllowedOrigins.length === 0) {
 		ctx.addIssue({
-			code: z.ZodIssueCode.custom,
+			code: 'custom',
 			path: ['CORS_ALLOWED_ORIGINS'],
 			message:
 				'At least one allowed origin is required when NODE_ENV=production.'
