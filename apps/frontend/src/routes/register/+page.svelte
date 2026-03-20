@@ -94,7 +94,7 @@
 	{/if}
 {/snippet}
 
-<div class="flex h-dvh w-dvw flex-col items-center justify-center">
+<main class="flex h-dvh w-dvw flex-col items-center justify-center">
 	<h1 class="mb-6 font-header text-4xl font-bold">Register</h1>
 	<form class="flex w-11/12 max-w-md flex-col gap-3 p-4" onsubmit={handleSubmit}>
 		<label class="flex flex-col gap-1 text-lg font-bold">
@@ -108,43 +108,51 @@
 							focus:border-2 focus:border-secondary focus:outline-0"
 			/>
 		</label>
-		<label class="relative flex flex-col gap-1 text-lg font-bold">
+		<label class="flex flex-col gap-1 text-lg font-bold">
 			密碼
-			<input
-				type={passwordInputType}
-				name="password"
-				autocomplete="new-password"
-				bind:value={password}
-				class="h-10 rounded-md border border-border px-2 py-1 text-lg font-normal transition-colors duration-300 ease-in-out
-							focus:border-2 focus:border-secondary focus:outline-0"
-			/>
-			<button
-				type="button"
-				class="absolute top-10.5 right-3 cursor-pointer"
-				onclick={switchPwdDisplay}
-				aria-label={passwordToggleLabel}
-			>
-				{@render visibilityIcon(showPwd)}
-			</button>
+			<div class="relative">
+				<input
+					type={passwordInputType}
+					name="password"
+					autocomplete="new-password"
+					bind:value={password}
+					class="h-10 w-full rounded-md border border-border px-2 py-1 pr-12 text-lg font-normal transition-colors duration-300 ease-in-out
+								focus:border-2 focus:border-secondary focus:outline-0"
+				/>
+				<button
+					type="button"
+					class="absolute top-1/2 right-1 flex h-12 w-12 -translate-y-1/2 cursor-pointer items-center justify-center rounded-md text-muted transition-colors duration-200
+								ease-in-out hover:text-foreground focus-visible:outline-2 focus-visible:outline-secondary focus-visible:outline-offset-2"
+					onclick={switchPwdDisplay}
+					aria-label={passwordToggleLabel}
+					aria-pressed={showPwd}
+				>
+					{@render visibilityIcon(showPwd)}
+				</button>
+			</div>
 		</label>
-		<label class="relative flex flex-col gap-1 text-lg font-bold">
+		<label class="flex flex-col gap-1 text-lg font-bold">
 			確認密碼
-			<input
-				type={passwordInputType}
-				name="confirm-password"
-				autocomplete="new-password"
-				bind:value={confirmPassword}
-				class="h-10 rounded-md border border-border px-2 py-1 text-lg font-normal transition-colors duration-300 ease-in-out
-							focus:border-2 focus:border-secondary focus:outline-0"
-			/>
-			<button
-				type="button"
-				class="absolute top-10.5 right-3 cursor-pointer"
-				onclick={switchPwdDisplay}
-				aria-label={passwordToggleLabel}
-			>
-				{@render visibilityIcon(showPwd)}
-			</button>
+			<div class="relative">
+				<input
+					type={passwordInputType}
+					name="confirm-password"
+					autocomplete="new-password"
+					bind:value={confirmPassword}
+					class="h-10 w-full rounded-md border border-border px-2 py-1 pr-12 text-lg font-normal transition-colors duration-300 ease-in-out
+								focus:border-2 focus:border-secondary focus:outline-0"
+				/>
+				<button
+					type="button"
+					class="absolute top-1/2 right-1 flex h-12 w-12 -translate-y-1/2 cursor-pointer items-center justify-center rounded-md text-muted transition-colors duration-200
+								ease-in-out hover:text-foreground focus-visible:outline-2 focus-visible:outline-secondary focus-visible:outline-offset-2"
+					onclick={switchPwdDisplay}
+					aria-label={passwordToggleLabel}
+					aria-pressed={showPwd}
+				>
+					{@render visibilityIcon(showPwd)}
+				</button>
+			</div>
 		</label>
 		{#if errorMessage}
 			<p
@@ -171,4 +179,4 @@
 		已經有帳號了？
 		<a href={resolve('/login')} class="text-blue-500 underline decoration-blue-500">馬上登入</a>
 	</span>
-</div>
+</main>
