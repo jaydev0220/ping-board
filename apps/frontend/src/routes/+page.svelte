@@ -3,6 +3,7 @@
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import { getContext } from 'svelte';
 	import {
 		ApiClientError,
 		getAccessToken,
@@ -31,8 +32,14 @@
 		uptimeData: UptimeData[];
 	}
 
+	type AuthState = 'initializing' | 'authenticated' | 'anonymous';
+	interface AuthContext {
+		readonly state: AuthState;
+	}
+
 	const DAY_IN_SECONDS = 24 * 60 * 60;
 	const STATUS_WINDOW_DAYS = 90;
+	const auth = getContext<AuthContext>('auth');
 
 	let isLoading = $state(true);
 	let errorMessage = $state<string | null>(null);
@@ -114,13 +121,18 @@
 		return 'Failed to load dashboard data.';
 	};
 
-	const ensureAccessToken = async (): Promise<void> => {
+	const ensureAccessToken = async (): Promise<boolean> => {
 		if (getAccessToken()) {
-			return;
+			return true;
+		}
+
+		if (auth.state === 'anonymous') {
+			return false;
 		}
 
 		const response = await refresh();
 		setAccessToken(response.accessToken);
+		return true;
 	};
 
 	const loadDashboardData = async (): Promise<void> => {
@@ -128,7 +140,11 @@
 		errorMessage = null;
 
 		try {
-			await ensureAccessToken();
+			const hasAccessToken = await ensureAccessToken();
+			if (!hasAccessToken) {
+				services = [];
+				return;
+			}
 			const nowUnixSeconds = Math.floor(Date.now() / 1000);
 			const { services: serviceRows } = await getServices();
 			const statusHistories = await Promise.all(
@@ -154,7 +170,10 @@
 	const handleCreateService = async (input: CreateServiceInput): Promise<void> => {
 		mutationErrorMessage = null;
 		try {
-			await ensureAccessToken();
+			const hasAccessToken = await ensureAccessToken();
+			if (!hasAccessToken) {
+				return;
+			}
 			await createService(input);
 			await loadDashboardData();
 		} catch (error) {
@@ -166,7 +185,10 @@
 	const handleUpdateService = async (id: number, input: UpdateServiceInput): Promise<void> => {
 		mutationErrorMessage = null;
 		try {
-			await ensureAccessToken();
+			const hasAccessToken = await ensureAccessToken();
+			if (!hasAccessToken) {
+				return;
+			}
 			await updateService(id, input);
 			await loadDashboardData();
 		} catch (error) {
@@ -178,7 +200,10 @@
 	const handleDeleteService = async (id: number): Promise<void> => {
 		mutationErrorMessage = null;
 		try {
-			await ensureAccessToken();
+			const hasAccessToken = await ensureAccessToken();
+			if (!hasAccessToken) {
+				return;
+			}
 			await deleteService(id);
 			await loadDashboardData();
 		} catch (error) {
