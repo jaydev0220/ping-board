@@ -17,6 +17,8 @@
     "migrate:rollback:prod": "pnpm --filter backend migrate:rollback --env production"
   },
   "dependencies": {
+    "@vercel/analytics": "^2.0.1",
+    "@vercel/speed-insights": "^2.0.0",
     "better-sqlite3": "catalog:",
     "cors": "catalog:",
     "express": "catalog:",

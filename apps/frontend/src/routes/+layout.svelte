@@ -1,4 +1,7 @@
 <script lang="ts">
+	import { injectAnalytics } from '@vercel/analytics/sveltekit';
+	import { injectSpeedInsights } from '@vercel/speed-insights/sveltekit';
+	import { dev } from '$app/environment';
 	import { page } from '$app/state';
 	import { setContext } from 'svelte';
 	import type { Snippet } from 'svelte';
@@ -6,6 +9,9 @@
 	import { clearAccessToken, refresh, setAccessToken } from '$lib/api';
 	import { AUTH_REFRESH_ERROR_EVENT, shouldNotifyAuthError } from '$lib/auth';
 	import './layout.css';
+
+	injectAnalytics({ mode: dev ? 'development' : 'production' });
+	injectSpeedInsights();
 
 	let { children } = $props<{ children: Snippet }>();
 	let authState = $state<'initializing' | 'authenticated' | 'anonymous'>('initializing');

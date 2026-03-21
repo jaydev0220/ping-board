@@ -36,6 +36,8 @@
 		"vite": "catalog:"
 	},
 	"dependencies": {
-		"@lucide/svelte": "catalog:"
+		"@lucide/svelte": "catalog:",
+		"@vercel/analytics": "catalog:",
+		"@vercel/speed-insights": "catalog:"
 	}
 }
