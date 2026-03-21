@@ -109,7 +109,7 @@ pnpm migrate:rollback:prod
 - **CORS**: Configurable allowlist via `CORS_ALLOWED_ORIGINS` env var
 - **Helmet**: Security headers enabled globally
 - **Password**: Argon2id hashing
-- **Cookies**: HttpOnly, SameSite strict, Secure (production only)
+- **Cookies**: HttpOnly, SameSite strict (production) / lax (non-production), Secure (production only)
 - **Validation**: Strict Zod schemas on all inputs
 - **Database**: Parameterized queries only (SQLite prepared statements)
 
