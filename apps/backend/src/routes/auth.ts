@@ -13,7 +13,7 @@ const REFRESH_COOKIE_NAME = 'refreshToken';
 const COOKIE_OPTIONS: CookieOptions = {
 	httpOnly: true,
 	secure: env.nodeEnv === 'production',
-	sameSite: 'strict',
+	sameSite: env.nodeEnv === 'production' ? 'strict' : 'lax',
 	path: '/auth/refresh',
 	maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days in milliseconds
 };
