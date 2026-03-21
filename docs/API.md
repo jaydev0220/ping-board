@@ -14,12 +14,14 @@ Common headers:
 ```http
 Content-Type: application/json
 Authorization: Bearer <access-token>
+X-Relay-Secret: <relay-secret>
 ```
 
 Notes:
 
 - `Authorization` is required only on protected endpoints (`/services/*`, `/status/*`).
 - `POST /auth/refresh` uses the `refreshToken` cookie and does not require the Authorization header.
+- Direct backend calls to `/auth/*`, `/services/*`, and `/status/*` require `X-Relay-Secret`.
 - `GET /health` is public and does not require authentication.
 
 ## Security and Authentication
@@ -30,10 +32,12 @@ PingBoard uses JWT access tokens + refresh token cookies:
 
 - `POST /auth/login`
   - Returns `accessToken` in JSON response body
-  - Sets `refreshToken` as HTTP-only cookie
+  - Returns `refreshToken` in JSON response body (backend internal contract)
 - `POST /auth/refresh`
   - Reads `refreshToken` cookie
-  - Returns a new `accessToken`
+  - Returns new `accessToken` and rotated `refreshToken` in JSON response body
+- Frontend relay (`apps/frontend`) consumes backend `refreshToken`, sets it as HttpOnly cookie,
+  then strips `refreshToken` from browser-facing JSON responses.
 
 ### Authorization header format
 
@@ -54,10 +58,10 @@ JWT middleware (`verifyJwt`) rejects malformed or invalid tokens with:
 Cookie name: `refreshToken`
 
 - `HttpOnly: true`
-- `SameSite: strict` when `NODE_ENV=production`, otherwise `lax`
-- `Secure: true` when `NODE_ENV=production`
+- `SameSite: strict`
+- `Secure: true` when `NODE_ENV=production`, otherwise `false`
 - `Path: /auth/refresh`
-- `Max-Age: 604800000` (7 days)
+- `Max-Age: 604800` (7 days, seconds)
 
 ### CORS behavior
 
@@ -72,6 +76,7 @@ CORS is configured from `CORS_ALLOWED_ORIGINS` (comma-separated absolute URLs):
 
 - `helmet()` is enabled globally.
 - Error responses are normalized by global error middleware.
+- Backend relay-origin middleware requires `X-Relay-Secret` on `/auth/*`, `/services/*`, `/status/*`.
 
 ## Auth Endpoints
 
@@ -151,6 +156,7 @@ Example:
 ```bash
 curl -i -X POST http://127.0.0.1:3001/auth/login \
   -H "Content-Type: application/json" \
+  -H "X-Relay-Secret: <relay-secret>" \
   -c cookies.txt \
   -d '{"username":"alice_01","password":"StrongPass123!"}'
 ```
@@ -197,6 +203,7 @@ Example:
 
 ```bash
 curl -i -X POST http://127.0.0.1:3001/auth/refresh \
+  -H "X-Relay-Secret: <relay-secret>" \
   -b cookies.txt -c cookies.txt
 ```
 
@@ -229,9 +236,10 @@ Success: `200 OK`
 			"description": "Primary API",
 			"is_active": 1,
 			"created_at": 1735689600,
-			"created_by": 42
+			"first_created_by": 42
 		}
-	]
+	],
+	"service_quota": 2
 }
 ```
 
@@ -245,7 +253,8 @@ Example:
 
 ```bash
 curl -X GET http://127.0.0.1:3001/services \
-  -H "Authorization: Bearer <access-token>"
+  -H "Authorization: Bearer <access-token>" \
+  -H "X-Relay-Secret: <relay-secret>"
 ```
 
 ### POST `/services`
@@ -273,7 +282,7 @@ Success: `201 Created`
 		"description": "Customer frontend",
 		"is_active": 1,
 		"created_at": 1735689600,
-		"created_by": 42
+		"first_created_by": 42
 	}
 }
 ```
@@ -285,6 +294,7 @@ Example:
 ```bash
 curl -X POST http://127.0.0.1:3001/services \
   -H "Authorization: Bearer <access-token>" \
+  -H "X-Relay-Secret: <relay-secret>" \
   -H "Content-Type: application/json" \
   -d '{"name":"Web App","url":"https://app.example.com/health","description":"Customer frontend"}'
 ```
@@ -313,7 +323,7 @@ Success: `200 OK`
 		"description": "Production health endpoint",
 		"is_active": 1,
 		"created_at": 1735689600,
-		"created_by": 42
+		"first_created_by": 42
 	}
 }
 ```
@@ -330,6 +340,7 @@ Example:
 ```bash
 curl -X PATCH http://127.0.0.1:3001/services/7 \
   -H "Authorization: Bearer <access-token>" \
+  -H "X-Relay-Secret: <relay-secret>" \
   -H "Content-Type: application/json" \
   -d '{"name":"Web App (Prod)","description":"Production health endpoint"}'
 ```
@@ -349,7 +360,8 @@ Example:
 
 ```bash
 curl -X DELETE http://127.0.0.1:3001/services/7 \
-  -H "Authorization: Bearer <access-token>"
+  -H "Authorization: Bearer <access-token>" \
+  -H "X-Relay-Secret: <relay-secret>"
 ```
 
 ## Status Endpoint
@@ -388,7 +400,8 @@ Example:
 
 ```bash
 curl -X GET http://127.0.0.1:3001/status/1 \
-  -H "Authorization: Bearer <access-token>"
+  -H "Authorization: Bearer <access-token>" \
+  -H "X-Relay-Secret: <relay-secret>"
 ```
 
 ## Health Endpoint
@@ -434,7 +447,9 @@ Errors: `500` (unexpected server error only)
 ### Response item schemas
 
 - `ServiceResponseSchema`:
-  - `id`, `name`, `url`, `description`, `is_active`, `created_at`, `created_by`
+  - `id`, `name`, `url`, `description`, `is_active`, `created_at`, `first_created_by`
+- `ServicesResponseSchema`:
+  - `services: ServiceResponse[]`, `service_quota: number`
 - `StatusItemResponseSchema`:
   - `is_up`, `status_code`, `latency_ms`, `checked_at`
 
