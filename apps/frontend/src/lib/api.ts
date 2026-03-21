@@ -1,4 +1,3 @@
-import { env } from '$env/dynamic/public';
 import { tryRefreshAndRetry } from './auth.js';
 import type {
 	AuthCredentials,
@@ -11,7 +10,6 @@ import type {
 	UpdateServiceInput
 } from './types';
 
-const API_BASE_URL = (env.PUBLIC_API_BASE_URL ?? 'http://localhost:3001').replace(/\/+$/, '');
 let accessToken: string | null = null;
 
 export interface ApiErrorPayload {
@@ -78,10 +76,6 @@ function buildHeaders(requireAuth: boolean): Headers {
 	return headers;
 }
 
-function toUrl(path: string): string {
-	return `${API_BASE_URL}${path}`;
-}
-
 function assertPositiveId(id: number): void {
 	if (!Number.isInteger(id) || id <= 0) {
 		throw new TypeError('id must be a positive integer');
@@ -137,7 +131,7 @@ async function request<TResponse, TBody = undefined>(
 		init.body = JSON.stringify(body);
 	}
 
-	const response = await fetch(toUrl(path), init);
+	const response = await fetch(path, init);
 	const payload = await parseJsonSafely(response);
 
 	if (!response.ok) {
