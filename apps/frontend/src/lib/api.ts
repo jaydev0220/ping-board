@@ -11,7 +11,7 @@ import type {
 	UpdateServiceInput
 } from './types';
 
-const API_BASE_URL = (env.PUBLIC_API_BASE_URL ?? 'http://127.0.0.1:3001').replace(/\/+$/, '');
+const API_BASE_URL = (env.PUBLIC_API_BASE_URL ?? 'http://localhost:3001').replace(/\/+$/, '');
 let accessToken: string | null = null;
 
 export interface ApiErrorPayload {
