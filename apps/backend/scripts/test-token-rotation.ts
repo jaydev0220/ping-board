@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import Database from 'better-sqlite3';
 
 const BASE_URL = 'http://127.0.0.1:3001';
+const RELAY_SECRET = process.env.RELAY_SECRET ?? 'dev-relay-secret-change-me';
 // Get the sqlite path relative to the backend directory
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -30,7 +31,10 @@ async function testTokenRotation() {
 
 	const registerResponse = await fetch(`${BASE_URL}/auth/register`, {
 		method: 'POST',
-		headers: { 'Content-Type': 'application/json' },
+		headers: {
+			'Content-Type': 'application/json',
+			'X-Relay-Secret': RELAY_SECRET
+		},
 		body: JSON.stringify({ username, password })
 	});
 
@@ -49,7 +53,10 @@ async function testTokenRotation() {
 
 	const loginResponse = await fetch(`${BASE_URL}/auth/login`, {
 		method: 'POST',
-		headers: { 'Content-Type': 'application/json' },
+		headers: {
+			'Content-Type': 'application/json',
+			'X-Relay-Secret': RELAY_SECRET
+		},
 		body: JSON.stringify({ username, password })
 	});
 
@@ -84,7 +91,8 @@ async function testTokenRotation() {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
-			Cookie: `refreshToken=${originalToken}`
+			Cookie: `refreshToken=${originalToken}`,
+			'X-Relay-Secret': RELAY_SECRET
 		}
 	});
 
@@ -126,7 +134,8 @@ async function testTokenRotation() {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
-			Cookie: `refreshToken=${newToken}`
+			Cookie: `refreshToken=${newToken}`,
+			'X-Relay-Secret': RELAY_SECRET
 		}
 	});
 
@@ -149,7 +158,8 @@ async function testTokenRotation() {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
-			Cookie: `refreshToken=${originalToken}`
+			Cookie: `refreshToken=${originalToken}`,
+			'X-Relay-Secret': RELAY_SECRET
 		}
 	});
 

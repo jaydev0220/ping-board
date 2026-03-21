@@ -1,6 +1,7 @@
 import * as readline from 'node:readline';
 
 const BASE_URL = 'http://127.0.0.1:3001';
+const RELAY_SECRET = process.env.RELAY_SECRET ?? 'dev-relay-secret-change-me';
 // State management
 let lastExtractedToken: string | null = null;
 // Initialize readline interface
@@ -76,7 +77,10 @@ const testRegister = async (): Promise<void> => {
 	try {
 		const response = await fetch(`${BASE_URL}/auth/register`, {
 			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
+			headers: {
+				'Content-Type': 'application/json',
+				'X-Relay-Secret': RELAY_SECRET
+			},
 			body: JSON.stringify({ username, password })
 		});
 		const data = await response.json();
@@ -99,7 +103,10 @@ const testLogin = async (): Promise<void> => {
 	try {
 		const response = await fetch(`${BASE_URL}/auth/login`, {
 			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
+			headers: {
+				'Content-Type': 'application/json',
+				'X-Relay-Secret': RELAY_SECRET
+			},
 			body: JSON.stringify({ username, password })
 		});
 		const data = await response.json();
@@ -128,7 +135,8 @@ const testRefresh = async (): Promise<void> => {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
-				Cookie: `refreshToken=${token}`
+				Cookie: `refreshToken=${token}`,
+				'X-Relay-Secret': RELAY_SECRET
 			}
 		});
 		const data = await response.json();

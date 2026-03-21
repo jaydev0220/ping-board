@@ -1,5 +1,6 @@
 const BASE_URL = 'http://127.0.0.1:3001';
 const EXPECTED_QUOTA_ERROR = '已達到服務上限（最多 2 個）';
+const RELAY_SECRET = process.env.RELAY_SECRET ?? 'dev-relay-secret-change-me';
 
 interface LoginSuccessResponse {
 	accessToken: string;
@@ -17,7 +18,7 @@ interface ServiceResponse {
 		description: string | null;
 		is_active: 0 | 1;
 		created_at: number;
-		created_by: number;
+		first_created_by: number | null;
 	};
 }
 
@@ -61,7 +62,10 @@ const registerUser = async (
 ): Promise<void> => {
 	const response = await fetch(`${BASE_URL}/auth/register`, {
 		method: 'POST',
-		headers: { 'Content-Type': 'application/json' },
+		headers: {
+			'Content-Type': 'application/json',
+			'X-Relay-Secret': RELAY_SECRET
+		},
 		body: JSON.stringify({ username, password })
 	});
 
@@ -75,10 +79,13 @@ const registerUser = async (
 const loginUser = async (
 	username: string,
 	password: string
-): Promise<{ accessToken: string; setCookie: string }> => {
+): Promise<{ accessToken: string }> => {
 	const response = await fetch(`${BASE_URL}/auth/login`, {
 		method: 'POST',
-		headers: { 'Content-Type': 'application/json' },
+		headers: {
+			'Content-Type': 'application/json',
+			'X-Relay-Secret': RELAY_SECRET
+		},
 		body: JSON.stringify({ username, password })
 	});
 
@@ -89,14 +96,12 @@ const loginUser = async (
 	}
 
 	const data = await getJson<LoginSuccessResponse>(response);
-	const setCookie = response.headers.get('set-cookie');
 
 	assert(
 		typeof data.accessToken === 'string' && data.accessToken.length > 0,
 		'登入回應缺少 accessToken'
 	);
-	assert(setCookie !== null && setCookie.length > 0, '登入回應缺少 Set-Cookie');
-	return { accessToken: data.accessToken, setCookie };
+	return { accessToken: data.accessToken };
 };
 
 const createService = async (
@@ -107,7 +112,8 @@ const createService = async (
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
-			Authorization: `Bearer ${accessToken}`
+			Authorization: `Bearer ${accessToken}`,
+			'X-Relay-Secret': RELAY_SECRET
 		},
 		body: JSON.stringify({
 			name: `Quota Service ${sequence}`,
