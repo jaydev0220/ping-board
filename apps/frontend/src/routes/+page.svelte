@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Plus } from '@lucide/svelte';
+	import { LogOut, Plus } from '@lucide/svelte';
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
@@ -11,6 +11,7 @@
 		deleteService,
 		getServices,
 		getStatusHistory,
+		logout,
 		refresh,
 		setAccessToken,
 		updateService
@@ -225,6 +226,16 @@
 		showCreateModal = true;
 	};
 
+	const handleLogout = async (): Promise<void> => {
+		try {
+			await logout();
+		} catch (error) {
+			console.error('Logout error:', error);
+		} finally {
+			void goto(resolve('/login'));
+		}
+	};
+
 	$effect(() => {
 		if (!browser) {
 			return;
@@ -277,9 +288,18 @@
 
 <div class="relative flex h-dvh w-dvw flex-col items-center">
 	<header
-		class="mb-8 flex h-18 w-full items-center justify-center bg-surface font-header text-4xl font-bold"
+		class="mb-8 flex h-18 w-full items-center justify-between bg-surface px-6 font-header text-4xl font-bold"
 	>
-		Ping Board
+		<div class="w-24"></div>
+		<span>Ping Board</span>
+		<button
+			class="flex cursor-pointer items-center gap-2 rounded-lg border border-border px-3 py-1.5 text-base font-normal text-muted transition-colors hover:border-destructive hover:text-destructive"
+			onclick={handleLogout}
+			aria-label="Log out"
+		>
+			<LogOut size={18} />
+			登出
+		</button>
 	</header>
 	<div class="flex w-full flex-col items-center gap-6 px-4">
 		{#if mutationErrorMessage}

@@ -172,6 +172,24 @@ export function refresh(): Promise<AuthResponse> {
 	});
 }
 
+export async function logout(): Promise<void> {
+	try {
+		await request<{ message: string }>({
+			method: 'POST',
+			path: '/auth/logout',
+			requireAuth: true
+		});
+	} catch (error) {
+		// Suppress 401/404 — user is already logged out
+		if (error instanceof ApiClientError && (error.status === 401 || error.status === 404)) {
+			return;
+		}
+		throw error;
+	} finally {
+		clearAccessToken();
+	}
+}
+
 export function getServices(): Promise<ServicesResponse> {
 	return request<ServicesResponse>({
 		method: 'GET',
