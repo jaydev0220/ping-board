@@ -120,7 +120,9 @@ const createServiceStatement = db.prepare<
 	`
 );
 // Add ownership record
-const addServiceOwnerStatement = db.prepare<[serviceId: number, userId: number]>(
+const addServiceOwnerStatement = db.prepare<
+	[serviceId: number, userId: number]
+>(
 	`
 		INSERT INTO service_owners (service_id, user_id)
 		VALUES (?, ?)
@@ -136,11 +138,7 @@ const removeServiceOwnerStatement = db.prepare<
 	`
 );
 const updateServiceStatement = db.prepare<
-	[
-		name: string | null,
-		description: string | null,
-		serviceId: number
-	]
+	[name: string | null, description: string | null, serviceId: number]
 >(
 	`
 		UPDATE services

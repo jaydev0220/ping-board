@@ -213,10 +213,7 @@ export function logoutUser(userId: number): void {
 	// Mark all unconsumed refresh tokens for this user as consumed
 	const nowSecs = Math.floor(Date.now() / 1000);
 
-	db.prepare<
-		[number, number]
-	>('UPDATE refresh_tokens SET consumed_at = ? WHERE user_id = ? AND consumed_at IS NULL').run(
-		nowSecs,
-		userId
-	);
+	db.prepare<[number, number]>(
+		'UPDATE refresh_tokens SET consumed_at = ? WHERE user_id = ? AND consumed_at IS NULL'
+	).run(nowSecs, userId);
 }
