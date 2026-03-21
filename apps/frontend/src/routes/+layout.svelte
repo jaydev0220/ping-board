@@ -84,6 +84,7 @@
 </script>
 
 <svelte:head>
+	<meta name="robots" content="index, follow" />
 	<meta name="author" content="謝孟哲" />
 	<meta property="og:type" content="website" />
 	<meta property="og:image" content="https://cdn.hsieh-dev.us.ci/icons/favicon.webp" />
