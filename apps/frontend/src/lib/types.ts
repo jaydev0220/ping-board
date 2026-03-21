@@ -70,4 +70,6 @@ export interface UptimeData {
 	date: string;
 	uptimePercentage: number;
 	averageLatency: number;
+	totalPings: number;
+	incidents: number;
 }

@@ -53,6 +53,9 @@
 		nowUnixSeconds: number
 	): UptimeData[] => {
 		const cutoff = nowUnixSeconds - STATUS_WINDOW_DAYS * DAY_IN_SECONDS;
+		const rowsInWindow = statusHistory
+			.filter((row) => row.checked_at >= cutoff)
+			.sort((left, right) => left.checked_at - right.checked_at);
 		const groupedByDate: Record<
 			string,
 			{
@@ -60,26 +63,28 @@
 				upChecks: number;
 				latencyTotal: number;
 				latencyCount: number;
+				incidents: number;
+				lastIsUp: 0 | 1 | null;
 			}
 		> = {};
 
-		for (const row of statusHistory) {
-			if (row.checked_at < cutoff) {
-				continue;
-			}
-
+		for (const row of rowsInWindow) {
 			const dayKey = new Date(row.checked_at * 1000).toISOString().slice(0, 10);
 			const daySummary = groupedByDate[dayKey] ?? {
 				totalChecks: 0,
 				upChecks: 0,
 				latencyTotal: 0,
-				latencyCount: 0
+				latencyCount: 0,
+				incidents: 0,
+				lastIsUp: null
 			};
 
 			daySummary.totalChecks += 1;
 
 			if (row.is_up === 1) {
 				daySummary.upChecks += 1;
+			} else if (daySummary.lastIsUp !== 0) {
+				daySummary.incidents += 1;
 			}
 
 			if (typeof row.latency_ms === 'number') {
@@ -87,6 +92,7 @@
 				daySummary.latencyCount += 1;
 			}
 
+			daySummary.lastIsUp = row.is_up;
 			groupedByDate[dayKey] = daySummary;
 		}
 
@@ -100,7 +106,9 @@
 				return {
 					date,
 					uptimePercentage: Math.round(uptimePercentage * 100) / 100,
-					averageLatency: Math.round(averageLatency)
+					averageLatency: Math.round(averageLatency),
+					totalPings: summary.totalChecks,
+					incidents: summary.incidents
 				};
 			});
 	};
