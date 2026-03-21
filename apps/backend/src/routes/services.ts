@@ -7,12 +7,15 @@ import {
 	UpdateServiceSchema
 } from '../schemas/services.js';
 import {
+	addServiceOwner,
 	createService,
-	deleteService,
 	getServiceById,
+	getServiceByUrl,
 	getUserServiceCount,
 	getUserServiceQuota,
 	getUserServices,
+	isServiceOwner,
+	removeServiceOwner,
 	updateService,
 	type CreateServiceData,
 	type UpdateServiceData
@@ -63,6 +66,30 @@ servicesRouter.post('/', async (req, res) => {
 		throw new AppError(400, `已達到服務上限（最多 ${userServiceQuota} 個）`);
 	}
 
+	// Check if service URL already exists
+	const existingService = getServiceByUrl(parsedBody.data.url);
+
+	if (existingService !== null) {
+		// Service URL exists — check if user already owns it
+		if (isServiceOwner(existingService.id, userId)) {
+			throw new AppError(409, '您已訂閱此服務');
+		}
+
+		// Add ownership to existing service
+		addServiceOwner(existingService.id, userId);
+
+		// Re-fetch service via ownership join to confirm
+		const service = getServiceById(existingService.id, userId);
+
+		if (service === null) {
+			throw new Error('無法載入服務資料');
+		}
+
+		res.status(200).json({ service });
+		return;
+	}
+
+	// Service URL doesn't exist — create new service
 	const createPayload: CreateServiceData =
 		parsedBody.data.description === undefined
 			? { name: parsedBody.data.name, url: parsedBody.data.url }
@@ -123,9 +150,9 @@ servicesRouter.delete('/:id', async (req, res) => {
 		return;
 	}
 
-	const changes = deleteService(parsedParams.data.id, userId);
+	const { removed } = removeServiceOwner(parsedParams.data.id, userId);
 
-	if (changes === 0) {
+	if (!removed) {
 		throw new AppError(404, '找不到該服務');
 	}
 
