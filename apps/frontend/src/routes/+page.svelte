@@ -47,7 +47,8 @@
 	let mutationErrorMessage = $state<string | null>(null);
 	let showCreateModal = $state(false);
 	let services = $state<ServiceCardData[]>([]);
-	const serviceUsageLabel = $derived(`已用空間: ${services.length} / 2`);
+	let serviceQuota = $state<number | null>(null);
+	const serviceUsageLabel = $derived(`已用空間: ${services.length} / ${serviceQuota ?? '—'}`);
 
 	const transformStatusHistoryToUptimeData = (
 		statusHistory: StatusHistoryRow[],
@@ -152,10 +153,12 @@
 			const hasAccessToken = await ensureAccessToken();
 			if (!hasAccessToken) {
 				services = [];
+				serviceQuota = null;
 				return;
 			}
 			const nowUnixSeconds = Math.floor(Date.now() / 1000);
-			const { services: serviceRows } = await getServices();
+			const { services: serviceRows, service_quota } = await getServices();
+			serviceQuota = service_quota;
 			const statusHistories = await Promise.all(
 				serviceRows.map((service) => getStatusHistory(service.id))
 			);
@@ -170,6 +173,7 @@
 			}));
 		} catch (error) {
 			services = [];
+			serviceQuota = null;
 			errorMessage = toErrorMessage(error);
 		} finally {
 			isLoading = false;

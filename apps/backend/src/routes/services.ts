@@ -47,8 +47,9 @@ const sendValidationError = (
 servicesRouter.get('/', async (req, res) => {
 	const userId = getAuthenticatedUserId(req.user?.id);
 	const services = getUserServices(userId);
+	const serviceQuota = getUserServiceQuota(userId);
 
-	res.status(200).json({ services });
+	res.status(200).json({ services, service_quota: serviceQuota });
 });
 servicesRouter.post('/', async (req, res) => {
 	const userId = getAuthenticatedUserId(req.user?.id);

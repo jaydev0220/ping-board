@@ -155,6 +155,44 @@ const deleteServiceStatement = db.prepare<[serviceId: number]>(
 		WHERE id = ?
 	`
 );
+const createServiceTransaction = db.transaction(
+	(userId: number, data: CreateServiceData): ServiceRow => {
+		const result = createServiceStatement.run(
+			data.name,
+			data.url,
+			normalizeDescription(data.description),
+			userId
+		);
+		const createdServiceId = rowIdToNumber(result.lastInsertRowid);
+
+		addServiceOwnerStatement.run(createdServiceId, userId);
+
+		const createdService =
+			getServiceByIdStatement.get(createdServiceId, userId) ?? null;
+
+		if (createdService === null) {
+			throw new Error('Failed to load created service row');
+		}
+		return createdService;
+	}
+);
+const removeServiceOwnerTransaction = db.transaction(
+	(serviceId: number, userId: number): { removed: boolean; serviceDeleted: boolean } => {
+		const result = removeServiceOwnerStatement.run(serviceId, userId);
+
+		if (result.changes === 0) {
+			return { removed: false, serviceDeleted: false };
+		}
+
+		const remainingOwners = countServiceOwnersStatement.get(serviceId)?.count ?? 0;
+
+		if (remainingOwners === 0) {
+			deleteServiceStatement.run(serviceId);
+			return { removed: true, serviceDeleted: true };
+		}
+		return { removed: true, serviceDeleted: false };
+	}
+);
 const getServiceStatusHistoryStatement = db.prepare<
 	[serviceId: number, checkedAtCutoff: number],
 	StatusHistoryRow
@@ -212,26 +250,7 @@ export const countServiceOwners = (serviceId: number): number =>
 export const createService = (
 	userId: number,
 	data: CreateServiceData
-): ServiceRow => {
-	const result = createServiceStatement.run(
-		data.name,
-		data.url,
-		normalizeDescription(data.description),
-		userId
-	);
-	const createdServiceId = rowIdToNumber(result.lastInsertRowid);
-
-	// Add ownership record
-	addServiceOwnerStatement.run(createdServiceId, userId);
-
-	const createdService =
-		getServiceByIdStatement.get(createdServiceId, userId) ?? null;
-
-	if (createdService === null) {
-		throw new Error('Failed to load created service row');
-	}
-	return createdService;
-};
+): ServiceRow => createServiceTransaction(userId, data);
 
 export const addServiceOwner = (serviceId: number, userId: number): void => {
 	addServiceOwnerStatement.run(serviceId, userId);
@@ -256,24 +275,8 @@ export const updateService = (
 export const removeServiceOwner = (
 	serviceId: number,
 	userId: number
-): { removed: boolean; serviceDeleted: boolean } => {
-	// Remove ownership record
-	const result = removeServiceOwnerStatement.run(serviceId, userId);
-
-	if (result.changes === 0) {
-		return { removed: false, serviceDeleted: false };
-	}
-
-	// Check if any owners remain
-	const remainingOwners = countServiceOwners(serviceId);
-
-	if (remainingOwners === 0) {
-		// No owners left — delete the service (ping_logs cascade delete)
-		deleteServiceStatement.run(serviceId);
-		return { removed: true, serviceDeleted: true };
-	}
-	return { removed: true, serviceDeleted: false };
-};
+): { removed: boolean; serviceDeleted: boolean } =>
+	removeServiceOwnerTransaction(serviceId, userId);
 
 export const getServiceStatusHistory = (
 	serviceId: number,

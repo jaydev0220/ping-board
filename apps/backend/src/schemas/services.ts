@@ -44,7 +44,12 @@ export const ServiceResponseSchema = z.object({
 	description: z.string().nullable(),
 	is_active: BinaryIntSchema,
 	created_at: z.number().int().nonnegative(),
-	created_by: z.number().int().positive()
+	first_created_by: z.number().int().positive().nullable()
+});
+
+export const ServicesResponseSchema = z.object({
+	services: z.array(ServiceResponseSchema),
+	service_quota: z.number().int().nonnegative()
 });
 
 export const StatusItemResponseSchema = z.object({
@@ -61,5 +66,7 @@ export type CreateServiceInput = z.infer<typeof CreateServiceSchema>;
 export type UpdateServiceInput = z.infer<typeof UpdateServiceSchema>;
 
 export type ServiceResponse = z.infer<typeof ServiceResponseSchema>;
+
+export type ServicesResponse = z.infer<typeof ServicesResponseSchema>;
 
 export type StatusItemResponse = z.infer<typeof StatusItemResponseSchema>;

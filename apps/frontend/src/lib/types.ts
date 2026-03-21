@@ -13,7 +13,7 @@ export interface ServiceResponse {
 	description: string | null;
 	is_active: BinaryInt;
 	created_at: number;
-	created_by: number;
+	first_created_by: number | null;
 }
 
 export interface AuthCredentials {
@@ -49,6 +49,7 @@ export interface UpdateServiceInput {
 
 export interface ServicesResponse {
 	services: ServiceResponse[];
+	service_quota: number;
 }
 
 export interface ServiceResponseEnvelope {
