@@ -54,6 +54,12 @@
 		return date === 'Unknown' ? 'h-2' : 'h-full';
 	};
 
+	const getBarAnimationClass = (date: string): string => {
+		return date === 'Unknown'
+			? ''
+			: 'transition-transform duration-300 hover:-translate-y-0.75 hover:outline-2 hover:outline-nodata/50';
+	};
+
 	function handleEdit() {
 		showEditModal = true;
 	}
@@ -83,12 +89,13 @@
 			<Trash2 size={20} />
 		</button>
 	</div>
-	<div class=" box-content flex h-8 w-full items-end gap-0.75 overflow-x-auto pb-2">
+	<div class="flex h-12 w-full items-end gap-0.75 overflow-x-auto px-0.5 py-2">
 		{#snippet segment(day: UptimeData)}
 			<div
 				class="min-w-1.5 flex-1 rounded-md
 				{getBarColorClass(day.date, day.uptimePercentage)}
-				{getBarHeightClass(day.date)}"
+				{getBarHeightClass(day.date)}
+				{getBarAnimationClass(day.date)}"
 			></div>
 		{/snippet}
 
