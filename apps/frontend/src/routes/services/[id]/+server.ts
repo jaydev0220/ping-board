@@ -1,8 +1,4 @@
-import {
-	forwardAuthorizationHeader,
-	RELAY_API_BASE_URL,
-	relayJsonOrNoContent
-} from '$lib/relay';
+import { forwardAuthorizationHeader, RELAY_API_BASE_URL, relayJsonOrNoContent } from '$lib/relay';
 import type { RequestHandler } from './$types';
 
 export const PATCH: RequestHandler = async ({ params, request, fetch }) => {

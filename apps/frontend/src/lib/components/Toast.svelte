@@ -1,5 +1,9 @@
 <script lang="ts">
-	const { visible, message, type = 'error' } = $props<{
+	const {
+		visible,
+		message,
+		type = 'error'
+	} = $props<{
 		visible: boolean;
 		message: string;
 		type?: 'error' | 'info' | 'success';

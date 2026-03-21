@@ -29,7 +29,11 @@ export function getRefreshTokenCookieDeleteOptions(isDev: boolean): RefreshToken
 	return getRefreshTokenCookieBaseOptions(isDev);
 }
 
-export function setRefreshTokenCookie(cookies: Cookies, refreshToken: string, isDev: boolean): void {
+export function setRefreshTokenCookie(
+	cookies: Cookies,
+	refreshToken: string,
+	isDev: boolean
+): void {
 	cookies.set(REFRESH_TOKEN_COOKIE_NAME, refreshToken, getRefreshTokenCookieSetOptions(isDev));
 }
 

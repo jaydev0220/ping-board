@@ -123,8 +123,8 @@
 				/>
 				<button
 					type="button"
-					class="absolute top-1/2 right-1 flex h-12 w-12 -translate-y-1/2 cursor-pointer items-center justify-center rounded-md text-muted transition-colors duration-200
-								ease-in-out hover:text-foreground focus-visible:outline-2 focus-visible:outline-secondary focus-visible:outline-offset-2"
+					class="hover:text-foreground absolute top-1/2 right-1 flex h-12 w-12 -translate-y-1/2 cursor-pointer items-center justify-center rounded-md text-muted transition-colors
+								duration-200 ease-in-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
 					onclick={switchPwdDisplay}
 					aria-label={passwordToggleLabel}
 					aria-pressed={showPwd}
