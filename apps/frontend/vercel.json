@@ -1,0 +1,8 @@
+{
+	"rewrites": [
+		{
+			"source": "/api/:path*",
+			"destination": "https://api.hsieh-dev.us.ci/ping-board/:path*"
+		}
+	]
+}
