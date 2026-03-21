@@ -78,6 +78,14 @@
 		content="Sign in to Ping Board. Access your service monitoring dashboard and track real-time uptime status."
 	/>
 	<title>Login | Ping Board</title>
+	<script type="application/ld+json">
+		{
+			"@context": "https://schema.org/",
+			"@type": "WebSite",
+			"name": "Login | Ping Board",
+			"url": "https://ping-board.hsieh-dev.us.ci/login"
+		}
+	</script>
 </svelte:head>
 
 {#snippet visibilityIcon(isVisible: boolean)}

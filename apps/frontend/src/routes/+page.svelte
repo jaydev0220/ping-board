@@ -246,6 +246,14 @@
 		content="Monitor your services with Ping Board. Track uptime, latency, and status history over 90 days. Reliable URL monitoring and status page management."
 	/>
 	<title>Dashboard | Ping Board</title>
+	<script type="application/ld+json">
+		{
+			"@context": "https://schema.org/",
+			"@type": "WebSite",
+			"name": "Dashboard | Ping Board",
+			"url": "https://ping-board.hsieh-dev.us.ci/"
+		}
+	</script>
 </svelte:head>
 
 {#snippet statusPanel(message: string, tone: 'default' | 'destructive' = 'default')}

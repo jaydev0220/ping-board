@@ -84,6 +84,14 @@
 		content="Create a Ping Board account. Start monitoring your services, track uptime, and manage status pages for free."
 	/>
 	<title>Register | Ping Board</title>
+	<script type="application/ld+json">
+		{
+			"@context": "https://schema.org/",
+			"@type": "WebSite",
+			"name": "Register | Ping Board",
+			"url": "https://ping-board.hsieh-dev.us.ci/register"
+		}
+	</script>
 </svelte:head>
 
 {#snippet visibilityIcon(isVisible: boolean)}
