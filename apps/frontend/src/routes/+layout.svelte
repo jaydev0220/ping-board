@@ -12,7 +12,7 @@
 	let toastVisible = $state(false);
 	let toastMessage = $state('');
 	let toastTimeoutId = $state<ReturnType<typeof setTimeout> | null>(null);
-	const canonicalUrl = $derived(`https://www.hsieh-dev.us.ci${page.url.pathname}`);
+	const canonicalUrl = $derived(`https://ping-board.hsieh-dev.us.ci${page.url.pathname}`);
 
 	function showErrorToast(message: string): void {
 		toastMessage = message;
