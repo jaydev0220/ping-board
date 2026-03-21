@@ -3,9 +3,11 @@ import z from 'zod';
 import { LoginSchema, RegisterSchema } from '../schemas/auth.js';
 import {
 	loginUser,
+	logoutUser,
 	refreshAccessToken,
 	registerUser
 } from '../services/auth.js';
+import { verifyJwt } from '../middleware/auth.js';
 
 export const authRouter = Router();
 
@@ -60,4 +62,11 @@ authRouter.post('/refresh', async (req, res) => {
 		accessToken,
 		refreshToken
 	});
+});
+// POST /auth/logout
+authRouter.post('/logout', verifyJwt, (req, res) => {
+	const userId = req.user!.id;
+
+	logoutUser(userId);
+	res.status(200).json({ message: '已登出成功' });
 });

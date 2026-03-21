@@ -113,13 +113,13 @@ export async function loginUser(
 		.get(input.username);
 
 	if (row === undefined) {
-		throw new AppError(401, '無效的登入資料');
+		throw new AppError(401, '使用者名稱或密碼錯誤');
 	}
 
 	const passwordValid = await argon2.verify(row.pwd_hash, input.password);
 
 	if (!passwordValid) {
-		throw new AppError(401, '無效的登入資料');
+		throw new AppError(401, '使用者名稱或密碼錯誤');
 	}
 
 	const user: AuthUser = { id: row.id, username: row.username };
@@ -207,4 +207,16 @@ export async function refreshAccessToken(
 	// Store new refresh token
 	storeRefreshToken(userRow.id, refreshToken);
 	return { user, accessToken, refreshToken };
+}
+
+export function logoutUser(userId: number): void {
+	// Mark all unconsumed refresh tokens for this user as consumed
+	const nowSecs = Math.floor(Date.now() / 1000);
+
+	db.prepare<
+		[number, number]
+	>('UPDATE refresh_tokens SET consumed_at = ? WHERE user_id = ? AND consumed_at IS NULL').run(
+		nowSecs,
+		userId
+	);
 }
