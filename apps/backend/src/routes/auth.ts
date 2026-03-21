@@ -1,22 +1,11 @@
 import { Router } from 'express';
 import z from 'zod';
-import { env } from '../config/env.js';
 import { LoginSchema, RegisterSchema } from '../schemas/auth.js';
 import {
 	loginUser,
 	refreshAccessToken,
 	registerUser
 } from '../services/auth.js';
-import type { CookieOptions } from 'express';
-
-const REFRESH_COOKIE_NAME = 'refreshToken';
-const COOKIE_OPTIONS: CookieOptions = {
-	httpOnly: true,
-	secure: env.nodeEnv === 'production',
-	sameSite: env.nodeEnv === 'production' ? 'strict' : 'lax',
-	path: '/auth/refresh',
-	maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days in milliseconds
-};
 
 export const authRouter = Router();
 
@@ -49,10 +38,11 @@ authRouter.post('/login', async (req, res) => {
 
 	const { user, accessToken, refreshToken } = await loginUser(parsed.data);
 
-	res.cookie(REFRESH_COOKIE_NAME, refreshToken, COOKIE_OPTIONS);
-	res
-		.status(200)
-		.json({ user: { id: user.id, username: user.username }, accessToken });
+	res.status(200).json({
+		user: { id: user.id, username: user.username },
+		accessToken,
+		refreshToken
+	});
 });
 // POST /auth/refresh
 authRouter.post('/refresh', async (req, res) => {
@@ -65,8 +55,9 @@ authRouter.post('/refresh', async (req, res) => {
 
 	const { user, accessToken, refreshToken } = await refreshAccessToken(raw);
 
-	res.cookie(REFRESH_COOKIE_NAME, refreshToken, COOKIE_OPTIONS);
-	res
-		.status(200)
-		.json({ user: { id: user.id, username: user.username }, accessToken });
+	res.status(200).json({
+		user: { id: user.id, username: user.username },
+		accessToken,
+		refreshToken
+	});
 });
