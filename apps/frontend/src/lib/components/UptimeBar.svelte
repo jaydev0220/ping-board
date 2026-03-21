@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { SquarePen, Trash2 } from '@lucide/svelte';
+	import Tooltip from '$lib/components/Tooltip.svelte';
 	import ServiceEditModal from '$lib/components/ServiceEditModal.svelte';
 	import ServiceDeleteConfirmationModal from '$lib/components/ServiceDeleteConfirmationModal.svelte';
 	import type { Service, UpdateServiceInput, UptimeData } from '$lib/types';
@@ -16,7 +17,9 @@
 	const UNKNOWN_DAY: UptimeData = {
 		date: 'Unknown',
 		uptimePercentage: 0,
-		averageLatency: 0
+		averageLatency: 0,
+		totalPings: 0,
+		incidents: 0
 	};
 
 	let {
@@ -36,6 +39,11 @@
 	const serviceDescription = $derived(service.description?.trim() || 'No description');
 	let showEditModal = $state(false);
 	let showDeleteConfirmation = $state(false);
+	let tooltipVisible = $state(false);
+	let tooltipX = $state(0);
+	let tooltipY = $state(0);
+	let tooltipBadgeClass = $state('bg-healthy');
+	let tooltipDay = $state<UptimeData | null>(null);
 
 	const getBarColorClass = (date: string, uptimePercentage: number): string => {
 		if (date === 'Unknown') {
@@ -59,6 +67,56 @@
 			? ''
 			: 'transition-transform duration-300 hover:-translate-y-0.75 hover:outline-2 hover:outline-nodata/50';
 	};
+
+	const formatDateZhTw = (date: string): string => {
+		const compactDateMatch = /^(\d{4})[-/](\d{2})[-/](\d{2})$/.exec(date);
+		if (compactDateMatch) {
+			const [, year, month, day] = compactDateMatch;
+			return `${year}/${month}/${day}`;
+		}
+
+		const parsedDate = new Date(date);
+		if (Number.isNaN(parsedDate.getTime())) {
+			return date;
+		}
+
+		const year = parsedDate.getFullYear();
+		const month = String(parsedDate.getMonth() + 1).padStart(2, '0');
+		const day = String(parsedDate.getDate()).padStart(2, '0');
+		return `${year}/${month}/${day}`;
+	};
+
+	function handleSegmentEnter(event: MouseEvent, day: UptimeData) {
+		if (day.date === 'Unknown') {
+			tooltipVisible = false;
+			tooltipDay = null;
+			return;
+		}
+
+		tooltipDay = day;
+		tooltipBadgeClass = getBarColorClass(day.date, day.uptimePercentage);
+		tooltipX = event.clientX;
+		tooltipY = event.clientY;
+		tooltipVisible = true;
+	}
+
+	function handleSegmentMove(event: MouseEvent) {
+		if (!tooltipVisible) {
+			return;
+		}
+		tooltipX = event.clientX;
+		tooltipY = event.clientY;
+	}
+
+	function handleSegmentLeave() {
+		tooltipVisible = false;
+		tooltipDay = null;
+	}
+
+	const tooltipDateText = $derived(tooltipDay ? formatDateZhTw(tooltipDay.date) : '');
+	const tooltipTotalPings = $derived(tooltipDay?.totalPings ?? 0);
+	const tooltipIncidents = $derived(tooltipDay?.incidents ?? 0);
+	const tooltipUptimePercentage = $derived(tooltipDay?.uptimePercentage ?? 0);
 
 	function handleEdit() {
 		showEditModal = true;
@@ -92,10 +150,14 @@
 	<div class="flex h-12 w-full items-end gap-0.75 overflow-x-auto px-0.5 py-2">
 		{#snippet segment(day: UptimeData)}
 			<div
+				role="presentation"
 				class="min-w-1.5 flex-1 rounded-md
 				{getBarColorClass(day.date, day.uptimePercentage)}
 				{getBarHeightClass(day.date)}
 				{getBarAnimationClass(day.date)}"
+				onmouseenter={(event) => handleSegmentEnter(event, day)}
+				onmousemove={handleSegmentMove}
+				onmouseleave={handleSegmentLeave}
 			></div>
 		{/snippet}
 
@@ -104,6 +166,17 @@
 		{/each}
 	</div>
 </div>
+
+<Tooltip
+	visible={tooltipVisible && tooltipDay !== null}
+	x={tooltipX}
+	y={tooltipY}
+	dateText={tooltipDateText}
+	totalPings={tooltipTotalPings}
+	incidents={tooltipIncidents}
+	uptimePercentage={tooltipUptimePercentage}
+	badgeClass={tooltipBadgeClass}
+/>
 
 {#if showEditModal}
 	<ServiceEditModal
