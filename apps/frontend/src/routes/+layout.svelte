@@ -29,13 +29,6 @@
 	}
 
 	async function initializeAuth(): Promise<void> {
-		const refreshToken = await cookieStore.get('refresh_token');
-
-		if (!refreshToken) {
-			authState = 'anonymous';
-			return;
-		}
-
 		try {
 			const response = await refresh();
 			setAccessToken(response.accessToken);
