@@ -2,13 +2,15 @@ import {
 	forwardAuthorizationHeader,
 	RELAY_API_BASE_URL,
 	relayJson,
-	relayPayload
+	relayPayload,
+	withRelaySecretHeader
 } from '$lib/relay';
 import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async ({ request, fetch }) => {
 	const headers = new Headers(forwardAuthorizationHeader(request));
 	headers.set('authorization', headers.get('authorization') ?? '');
+	withRelaySecretHeader(headers);
 
 	const upstream = await fetch(`${RELAY_API_BASE_URL}/services`, {
 		method: 'GET',
@@ -23,6 +25,7 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 	const headers = new Headers(forwardAuthorizationHeader(request));
 	headers.set('authorization', headers.get('authorization') ?? '');
 	headers.set('content-type', 'application/json');
+	withRelaySecretHeader(headers);
 
 	const upstream = await fetch(`${RELAY_API_BASE_URL}/services`, {
 		method: 'POST',

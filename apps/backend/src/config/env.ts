@@ -10,6 +10,7 @@ const rawEnvSchema = z.object({
 	PING_TIMEOUT_MS: z.coerce.number().int().positive().default(5000),
 	SQLITE_PATH: z.string().trim().min(1).default('./data/ping-board.sqlite3'),
 	CORS_ALLOWED_ORIGINS: z.string().trim().default('http://localhost:5173'),
+	RELAY_SECRET: z.string().trim().min(1),
 	JWT_SECRET: z.string().min(32),
 	ACCESS_TOKEN_TTL: z.string().default('15m'),
 	REFRESH_TOKEN_TTL: z.string().default('7d')
@@ -49,6 +50,7 @@ const envSchema = rawEnvSchema.transform((input, ctx) => {
 		pingTimeoutMs: input.PING_TIMEOUT_MS,
 		sqlitePath,
 		corsAllowedOrigins,
+		relaySecret: input.RELAY_SECRET,
 		jwtSecret: input.JWT_SECRET,
 		accessTokenTtl: input.ACCESS_TOKEN_TTL,
 		refreshTokenTtl: input.REFRESH_TOKEN_TTL

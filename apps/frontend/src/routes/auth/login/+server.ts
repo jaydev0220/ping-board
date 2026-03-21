@@ -4,7 +4,8 @@ import {
 	forwardContentHeaders,
 	forwardCookieHeader,
 	RELAY_API_BASE_URL,
-	relayPayload
+	relayPayload,
+	withRelaySecretHeader
 } from '$lib/relay';
 import type { RequestHandler } from './$types';
 
@@ -18,6 +19,7 @@ export const POST: RequestHandler = async ({ request, cookies, fetch }) => {
 	headers.set('cookie', forwardCookieHeader(request).get('cookie') ?? '');
 	headers.set('content-type', headers.get('content-type') ?? 'application/json');
 	headers.set('accept', headers.get('accept') ?? 'application/json');
+	withRelaySecretHeader(headers);
 
 	const upstream = await fetch(`${RELAY_API_BASE_URL}/auth/login`, {
 		method: 'POST',

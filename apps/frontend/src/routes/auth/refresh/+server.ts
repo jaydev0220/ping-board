@@ -1,11 +1,17 @@
 import { dev } from '$app/environment';
 import { setRefreshTokenCookie } from '$lib/cookie-helper';
-import { forwardCookieHeader, RELAY_API_BASE_URL, relayPayload } from '$lib/relay';
+import {
+	forwardCookieHeader,
+	RELAY_API_BASE_URL,
+	relayPayload,
+	withRelaySecretHeader
+} from '$lib/relay';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ request, cookies, fetch }) => {
 	const headers = new Headers(forwardCookieHeader(request));
 	headers.set('cookie', headers.get('cookie') ?? '');
+	withRelaySecretHeader(headers);
 
 	const upstream = await fetch(`${RELAY_API_BASE_URL}/auth/refresh`, {
 		method: 'POST',

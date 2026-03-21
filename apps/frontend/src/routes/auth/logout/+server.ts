@@ -4,7 +4,8 @@ import {
 	forwardAuthorizationHeader,
 	forwardCookieHeader,
 	RELAY_API_BASE_URL,
-	relayPayload
+	relayPayload,
+	withRelaySecretHeader
 } from '$lib/relay';
 import type { RequestHandler } from './$types';
 
@@ -13,6 +14,7 @@ export const POST: RequestHandler = async ({ request, cookies, fetch }) => {
 	headers.set('authorization', headers.get('authorization') ?? '');
 	headers.set('cookie', forwardCookieHeader(request).get('cookie') ?? '');
 	headers.set('accept', request.headers.get('accept') ?? 'application/json');
+	withRelaySecretHeader(headers);
 
 	const upstream = await fetch(`${RELAY_API_BASE_URL}/auth/logout`, {
 		method: 'POST',

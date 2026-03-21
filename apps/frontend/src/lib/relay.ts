@@ -12,6 +12,21 @@ export const RELAY_API_BASE_URL = (env.PRIVATE_API_BASE_URL ?? DEFAULT_API_BASE_
 	/\/+$/,
 	''
 );
+const RELAY_SECRET_HEADER = 'x-relay-secret';
+
+const getRelaySecret = (): string => {
+	const relaySecret = env.PRIVATE_RELAY_SECRET;
+
+	if (typeof relaySecret !== 'string' || relaySecret.length === 0) {
+		throw new Error('Missing PRIVATE_RELAY_SECRET');
+	}
+	return relaySecret;
+};
+
+export const withRelaySecretHeader = (headers: Headers): Headers => {
+	headers.set(RELAY_SECRET_HEADER, getRelaySecret());
+	return headers;
+};
 
 export function forwardRelayHeaders(
 	request: Request,
