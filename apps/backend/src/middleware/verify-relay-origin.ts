@@ -2,7 +2,8 @@ import type { RequestHandler } from 'express';
 import { env } from '../config/env.js';
 import { AppError } from './error.js';
 
-const RELAY_SECRET_HEADER = 'x-relay-secret';const hasExpectedRelaySecret = (headerValue: string | undefined): boolean =>
+const RELAY_SECRET_HEADER = 'x-relay-secret';
+const hasExpectedRelaySecret = (headerValue: string | undefined): boolean =>
 	typeof headerValue === 'string' &&
 	headerValue.length > 0 &&
 	env.relaySecret.length > 0 &&

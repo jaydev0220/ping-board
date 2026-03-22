@@ -76,7 +76,8 @@ const run = async (): Promise<void> => {
 	console.log('====================================\n');
 	console.log('1. Check backend server connection...');
 	await checkServerConnection();
-	console.log('   ✅ Backend is reachable');	console.log('\n2. Verify auth routes reject missing relay header...');
+	console.log('   ✅ Backend is reachable');
+	console.log('\n2. Verify auth routes reject missing relay header...');
 	await assertRelayProtection('/auth/register', 'POST', {
 		username: 'relay_test_user',
 		password: 'RelayTest123!@#'
@@ -86,12 +87,17 @@ const run = async (): Promise<void> => {
 		password: 'RelayTest123!@#'
 	});
 	await assertRelayProtection('/auth/refresh', 'POST');
-	console.log('   ✅ Auth routes are protected');	console.log('\n3. Verify protected data routes reject missing relay header...');
+	console.log('   ✅ Auth routes are protected');
+	console.log(
+		'\n3. Verify protected data routes reject missing relay header...'
+	);
 	await assertRelayProtection('/services', 'GET');
 	await assertRelayProtection('/status/1', 'GET');
-	console.log('   ✅ Data routes are protected');	console.log('\n4. Verify valid relay header is accepted...');
+	console.log('   ✅ Data routes are protected');
+	console.log('\n4. Verify valid relay header is accepted...');
 	await assertAuthorizedRegister();
-	console.log('   ✅ Valid relay secret accepted');	console.log('\n====================================');
+	console.log('   ✅ Valid relay secret accepted');
+	console.log('\n====================================');
 	console.log('✅ Relay security test passed!');
 	console.log('====================================');
 };

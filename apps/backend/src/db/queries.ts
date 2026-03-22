@@ -177,14 +177,18 @@ const createServiceTransaction = db.transaction(
 	}
 );
 const removeServiceOwnerTransaction = db.transaction(
-	(serviceId: number, userId: number): { removed: boolean; serviceDeleted: boolean } => {
+	(
+		serviceId: number,
+		userId: number
+	): { removed: boolean; serviceDeleted: boolean } => {
 		const result = removeServiceOwnerStatement.run(serviceId, userId);
 
 		if (result.changes === 0) {
 			return { removed: false, serviceDeleted: false };
 		}
 
-		const remainingOwners = countServiceOwnersStatement.get(serviceId)?.count ?? 0;
+		const remainingOwners =
+			countServiceOwnersStatement.get(serviceId)?.count ?? 0;
 
 		if (remainingOwners === 0) {
 			deleteServiceStatement.run(serviceId);
