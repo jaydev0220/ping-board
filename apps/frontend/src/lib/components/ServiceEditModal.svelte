@@ -59,7 +59,7 @@
 		if (error instanceof Error) {
 			return error.message;
 		}
-		return 'Failed to save service.';
+		return '無法儲存服務。';
 	};
 
 	function handleCancel() {
@@ -86,12 +86,12 @@
 		const trimmedUrl = url.trim();
 
 		if (trimmedName.length === 0) {
-			errorMessage = 'Service name is required.';
+			errorMessage = '服務名稱為必填項目。';
 			return;
 		}
 
 		if (isCreateMode && trimmedUrl.length === 0) {
-			errorMessage = 'Service URL is required.';
+			errorMessage = '服務網址為必填項目。';
 			return;
 		}
 

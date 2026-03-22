@@ -25,7 +25,7 @@
 		if (error instanceof Error) {
 			return error.message;
 		}
-		return 'Failed to delete service.';
+		return '無法刪除服務。';
 	};
 
 	$effect(() => {

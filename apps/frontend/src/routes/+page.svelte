@@ -128,7 +128,7 @@
 		if (error instanceof Error) {
 			return error.message;
 		}
-		return 'Failed to load dashboard data.';
+		return '無法載入儀表板資料。';
 	};
 
 	const ensureAccessToken = async (): Promise<boolean> => {
@@ -328,7 +328,7 @@
 		</div>
 
 		{#if isLoading}
-			{@render statusPanel('Loading services...')}
+			{@render statusPanel('載入服務中…')}
 		{:else if errorMessage}
 			{@render statusPanel(errorMessage, 'destructive')}
 		{:else if services.length > 0}
@@ -342,7 +342,7 @@
 				/>
 			{/each}
 		{:else}
-			{@render statusPanel('No services available yet.')}
+			{@render statusPanel('尚無可用服務。')}
 		{/if}
 	</div>
 

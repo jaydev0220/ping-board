@@ -63,7 +63,7 @@ export async function tryRefreshAndRetry<T>(originalRequest: () => Promise<T>): 
 			} catch (err) {
 				if (shouldNotifyAuthError(err)) {
 					console.error('Access token refresh failed with server error', err);
-					emitAuthRefreshError('Unable to refresh your session due to a server error.');
+					emitAuthRefreshError('無法重新整理您的登入狀態，請稍後再試。');
 				}
 
 				// Refresh failed — clear token and redirect to login
@@ -93,7 +93,7 @@ export async function tryRefreshAndRetry<T>(originalRequest: () => Promise<T>): 
 			await goto(resolve('/login'));
 		} else if (shouldNotifyAuthError(err)) {
 			console.error('Retry after token refresh failed with server error', err);
-			emitAuthRefreshError('Request retry failed due to a server error. Please try again.');
+			emitAuthRefreshError('重試失敗，請稍後再試。');
 		}
 		throw err;
 	}

@@ -85,7 +85,7 @@ function buildHeaders(requireAuth: boolean): Headers {
 
 	if (requireAuth) {
 		if (!accessToken) {
-			throw new ApiClientError(401, 'Authorization token missing');
+			throw new ApiClientError(401, '缺少授權權杖');
 		}
 		headers.set('Authorization', `Bearer ${accessToken}`);
 	}
@@ -121,7 +121,7 @@ function toApiClientError(status: number, payload: unknown): ApiClientError {
 		return new ApiClientError(status, payload.error, payload.details);
 	}
 
-	return new ApiClientError(status, 'Unexpected API error response');
+	return new ApiClientError(status, '無預期的 API 錯誤回應');
 }
 
 async function request<TResponse, TBody = undefined>(

@@ -42,7 +42,7 @@
 		} catch (error) {
 			if (shouldNotifyAuthError(error)) {
 				console.error('Initial auth refresh failed with server error', error);
-				showErrorToast('Unable to refresh your session due to a server error.');
+				showErrorToast('無法重新整理您的登入狀態，請稍後再試。');
 			}
 			clearAccessToken();
 			authState = 'anonymous';
