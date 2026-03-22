@@ -11,6 +11,21 @@ import type {
 } from './types';
 
 let accessToken: string | null = null;
+type AuthState = 'authenticated' | 'anonymous';
+
+export const AUTH_STATE_CHANGED_EVENT = 'pingboard:auth-state-changed';
+
+function emitAuthStateChange(state: AuthState): void {
+	if (typeof window === 'undefined') {
+		return;
+	}
+
+	window.dispatchEvent(
+		new CustomEvent<{ state: AuthState }>(AUTH_STATE_CHANGED_EVENT, {
+			detail: { state }
+		})
+	);
+}
 
 export interface ApiErrorPayload {
 	error: string;
@@ -42,6 +57,7 @@ interface ApiRequestOptions<TBody> {
 
 export function setAccessToken(token: string): void {
 	accessToken = token;
+	emitAuthStateChange('authenticated');
 }
 
 export function getAccessToken(): string | null {
@@ -50,6 +66,7 @@ export function getAccessToken(): string | null {
 
 export function clearAccessToken(): void {
 	accessToken = null;
+	emitAuthStateChange('anonymous');
 }
 
 function isApiErrorPayload(value: unknown): value is ApiErrorPayload {

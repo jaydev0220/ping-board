@@ -6,7 +6,7 @@
 	import { setContext } from 'svelte';
 	import type { Snippet } from 'svelte';
 	import Toast from '$lib/components/Toast.svelte';
-	import { clearAccessToken, refresh, setAccessToken } from '$lib/api';
+	import { AUTH_STATE_CHANGED_EVENT, clearAccessToken, refresh, setAccessToken } from '$lib/api';
 	import { AUTH_REFRESH_ERROR_EVENT, shouldNotifyAuthError } from '$lib/auth';
 	import './layout.css';
 
@@ -65,14 +65,21 @@
 			return;
 		}
 
+		const handleAuthStateChanged = (event: Event) => {
+			const { detail } = event as CustomEvent<{ state: 'authenticated' | 'anonymous' }>;
+			authState = detail.state;
+		};
+
 		const handleAuthRefreshError = (event: Event) => {
 			const { detail } = event as CustomEvent<{ message: string }>;
 			showErrorToast(detail.message);
 		};
 
+		window.addEventListener(AUTH_STATE_CHANGED_EVENT, handleAuthStateChanged);
 		window.addEventListener(AUTH_REFRESH_ERROR_EVENT, handleAuthRefreshError);
 
 		return () => {
+			window.removeEventListener(AUTH_STATE_CHANGED_EVENT, handleAuthStateChanged);
 			window.removeEventListener(AUTH_REFRESH_ERROR_EVENT, handleAuthRefreshError);
 			if (toastTimeoutId) {
 				clearTimeout(toastTimeoutId);
