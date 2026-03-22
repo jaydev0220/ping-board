@@ -260,14 +260,7 @@
 </script>
 
 <svelte:head>
-	<meta
-		name="description"
-		content="Monitor your services with Ping Board. Track uptime, latency, and status history over 90 days. Reliable URL monitoring and status page management."
-	/>
-	<meta
-		property="og:description"
-		content="Monitor your services with Ping Board. Track uptime, latency, and status history over 90 days. Reliable URL monitoring and status page management."
-	/>
+	<meta property="og:title" content="Dashboard | Ping Board" />
 	<title>Dashboard | Ping Board</title>
 	<script type="application/ld+json">
 		{

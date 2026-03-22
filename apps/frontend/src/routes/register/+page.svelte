@@ -83,6 +83,7 @@
 		property="og:description"
 		content="Create a Ping Board account. Start monitoring your services, track uptime, and manage status pages for free."
 	/>
+	<meta property="og:title" content="Register | Ping Board" />
 	<title>Register | Ping Board</title>
 	<script type="application/ld+json">
 		{

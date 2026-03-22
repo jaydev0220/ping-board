@@ -103,6 +103,16 @@
 	<meta property="og:locale" content="zh_TW" />
 	<meta property="og:locale_alternate" content="en_US" />
 	<meta property="og:site_name" content="謝孟哲 - 全端工程師" />
+	<meta
+		name="description"
+		content="Monitor your services with Ping Board. Track uptime, latency, and status history over 90 days. Reliable URL monitoring and status page management."
+	/>
+	<meta
+		property="og:description"
+		content="Monitor your services with Ping Board. Track uptime, latency, and status history over 90 days. Reliable URL monitoring and status page management."
+	/>
+	<meta property="og:title" content="Ping Board" />
+	<title>Ping Board</title>
 	<link rel="icon" href="https://cdn.hsieh-dev.us.ci/icons/favicon.svg" type="image/svg+xml" />
 	<link
 		rel="icon"

@@ -77,6 +77,7 @@
 		property="og:description"
 		content="Sign in to Ping Board. Access your service monitoring dashboard and track real-time uptime status."
 	/>
+	<meta property="og:title" content="Login | Ping Board" />
 	<title>Login | Ping Board</title>
 	<script type="application/ld+json">
 		{
